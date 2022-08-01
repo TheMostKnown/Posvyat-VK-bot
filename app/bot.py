@@ -5,10 +5,22 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
 from vk_tools import Keyboard
 from vk_events import send_message
-from vk_config import token_vk
+from token import vk_token
+
+session = vk_api.VkApi(token=vk_token)
 
 
-session = vk_api.VkApi(token=token_vk)
+def is_admin(id_p, event_p):
+
+    flag = 0
+    Group_id = session.method("groups.getById", {"peer_id": event_p.peer_id})
+    GroupInf = session.method("groups.getMembers", {"group_id": Group_id[0]["id"], "filter": "managers"})
+
+    for Member in GroupInf["items"]:
+        if Member["id"] == id_p and (Member["role"] == "administrator" or "creator"):
+            flag = 1
+
+    return flag
 
 
 def start():
@@ -19,4 +31,9 @@ def start():
             text = event.text.lower()
 
             if text == "start":
-                send_message(session, user_id, "Hello!")
+                if is_admin(user_id, event) == 1:
+                    send_message(session, user_id, "Hi, admin!")
+                else:
+                    send_message(session, user_id, "Hi, user!")
+
+start()
