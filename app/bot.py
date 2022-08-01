@@ -11,12 +11,35 @@ from vk_config import token_vk
 session = vk_api.VkApi(token=token_vk)
 
 
+def is_admin(id_p, event_p):
+
+    flag = 0
+    group_id = session.method("groups.getById", {"peer_id": event_p.peer_id})
+    group_inf = session.method("groups.getMembers", {"group_id": group_id[0]["id"], "filter": "managers"})
+
+    for Member in group_inf["items"]:
+
+        if Member["id"] == id_p and (Member["role"] == "administrator" or "creator"):
+            flag = 1
+
+    return flag
+
+
 def start():
 
     for event in VkLongPoll(session).listen():
+
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+
             user_id = event.user_id
             text = event.text.lower()
 
             if text == "start":
-                send_message(session, user_id, "Hello!")
+
+                if is_admin(user_id, event) == 1:
+                    send_message(session, user_id, "Hi, admin!")
+                else:
+                    send_message(session, user_id, "Hi, user!")
+
+
+start()
