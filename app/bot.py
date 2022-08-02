@@ -40,4 +40,3 @@ def start():
                     send_message(session, user_id, "Hi, admin!")
                 else:
                     send_message(session, user_id, "Hi, user!")
-
