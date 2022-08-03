@@ -18,10 +18,12 @@ def is_admin(id_p, event_p):
 
     for member in group_inf["items"]:
 
-        if member["id"] == id_p and (member["role"] == "administrator" or "creator"):
-            return 1
+        if member["id"] == id_p:
 
-    return 0
+            if member["role"] == "administrator" or "creator":
+                return True
+            else:
+                return False
 
 
 def start():
@@ -35,7 +37,7 @@ def start():
 
             if text == "start":
 
-                if is_admin(user_id, event) == 1:
+                if is_admin(user_id, event):
                     send_message(session, user_id, "Hi, admin!")
                 else:
                     send_message(session, user_id, "Hi, user!")
