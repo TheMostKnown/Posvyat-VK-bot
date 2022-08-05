@@ -13,16 +13,17 @@ session = vk_api.VkApi(token=token_vk)
 
 def is_admin(id_p, event_p):
 
-    flag = 0
     group_id = session.method("groups.getById", {"peer_id": event_p.peer_id})
     group_inf = session.method("groups.getMembers", {"group_id": group_id[0]["id"], "filter": "managers"})
 
-    for Member in group_inf["items"]:
+    for member in group_inf["items"]:
 
-        if Member["id"] == id_p and (Member["role"] == "administrator" or "creator"):
-            flag = 1
+        if member["id"] == id_p:
 
-    return flag
+            if member["role"] == "administrator" or "creator":
+                return True
+            else:
+                return False
 
 
 def start():
@@ -36,7 +37,7 @@ def start():
 
             if text == "start":
 
-                if is_admin(user_id, event) == 1:
+                if is_admin(user_id, event):
                     send_message(session, user_id, "Hi, admin!")
                 else:
                     send_message(session, user_id, "Hi, user!")
