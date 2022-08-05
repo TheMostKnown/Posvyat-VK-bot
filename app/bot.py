@@ -1,4 +1,5 @@
 import vk_api
+import psycopg2
 
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
@@ -6,9 +7,20 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_tools import Keyboard
 from vk_events import send_message
 from vk_config import token_vk
+from vk_config import db_name, user_name, pswrd, host, port
 
 
 session = vk_api.VkApi(token=token_vk)
+
+connection = psycopg2.connect(
+        database=db_name,
+        user=user_name,
+        password=pswrd,
+        host=host,
+        port=port
+    )
+
+cursor = connection.cursor()
 
 
 def is_admin(id_p, event_p):
@@ -34,6 +46,7 @@ def start():
 
             user_id = event.user_id
             text = event.text.lower()
+
 
             if text == "start":
 
