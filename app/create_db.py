@@ -28,7 +28,19 @@ def create():
                 phone_number varchar(12) NOT NULL,
                 tag varchar NOT NULL,
                 vk_link varchar UNIQUE,
-                group_num int references groups
+                first_group boolean NOT NULL,
+                second_group boolean NOT NULL,
+                third_group boolean NOT NULL,
+                fourth_group boolean NOT NULL,
+                fifth_group boolean NOT NULL,
+                sixth_group boolean NOT NULL,
+                seventh_group boolean NOT NULL,
+                eighth_group boolean NOT NULL,
+                ninth_group boolean NOT NULL,
+                tenth_group boolean NOT NULL,
+                eleventh_grup boolean NOT NULL,
+                twelfth_group boolean NOT NULL,
+                thirteenth_group boolean NOT NULL
                 );
                 """
                 """CREATE TABLE orgs(
@@ -37,7 +49,8 @@ def create():
                 name varchar(20) NOT NULL,
                 patronymic varchar(20) NOT NULL,
                 vk_org_link varchar NOT NULL,
-                group_org_num int references groups
+                first_org_group boolean NOT NULL,
+                second_org_group boolean NOT NULL
                 );
                 """
                 """CREATE TABLE sendings(
