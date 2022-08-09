@@ -1,106 +1,113 @@
-import psycopg2
-from vk_config import db_name, user_name, pswrd, port, host
-
-def create():
-    try:
-        connection = psycopg2.connect(
-            database=db_name,
-            user=user_name,
-            password=pswrd,
-            host=host,
-            port=port
-        )
-
-        connection.autocommit = True
-
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """CREATE TABLE groups(
-                id serial PRIMARY KEY,
-                group_info varchar(15) NOT NULL
-                );
-                """
-                """CREATE TABLE guests(
-                id serial PRIMARY KEY,
-                surname varchar(20) NOT NULL,
-                name varchar(20) NOT NULL,
-                patronymic varchar(20) NOT NULL,
-                phone_number varchar(12) NOT NULL,
-                tag varchar NOT NULL,
-                vk_link varchar UNIQUE,
-                first_group boolean NOT NULL,
-                second_group boolean NOT NULL,
-                third_group boolean NOT NULL,
-                fourth_group boolean NOT NULL,
-                fifth_group boolean NOT NULL,
-                sixth_group boolean NOT NULL,
-                seventh_group boolean NOT NULL,
-                eighth_group boolean NOT NULL,
-                ninth_group boolean NOT NULL,
-                tenth_group boolean NOT NULL,
-                eleventh_grup boolean NOT NULL,
-                twelfth_group boolean NOT NULL,
-                thirteenth_group boolean NOT NULL
-                );
-                """
-                """CREATE TABLE orgs(
-                id serial PRIMARY KEY, 
-                surname varchar(20) NOT NULL,
-                name varchar(20) NOT NULL,
-                patronymic varchar(20) NOT NULL,
-                vk_org_link varchar NOT NULL,
-                first_org_group boolean NOT NULL,
-                second_org_group boolean NOT NULL
-                );
-                """
-                """CREATE TABLE sendings(
-                mail_name varchar(20) PRIMARY KEY,
-                send_time time NOT NULL,
-                group_num int references groups,
-                info varchar(500) NOT NULL,
-                media varchar(50)
-                );
-                """
-                """CREATE TABLE info(
-                question varchar(100) PRIMARY KEY, 
-                answer varchar(500) NOT NULL
-                );
-                """
-                """CREATE TABLE tech_support(
-                id serial PRIMARY KEY,
-                vk_link varchar references guests(vk_link),
-                per_question varchar(100) NOT NULL,
-                status boolean NOT NULL
-                );
-                """
-            )
-            print("[INFO] Table created successfully")
-
-    except Exception as _ex:
-        print("[INFO] Error while working with PostgreSQL", _ex)
-
-    finally:
-        if connection:
-            connection.close()
-            print("[INFO] PostgreSQL connection closed")
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.engine import Engine
+from sqlalchemy import create_engine
+from vk_config import db_path
 
 
-def check_existance():
+# Создание движка
+database = declarative_base()
+engine = create_engine(db_path, pool_size=1000)
 
-    try:
-        connection = psycopg2.connect(
-            database=db_name,
-            user=user_name,
-            password=pswrd,
-            host=host,
-            port=port
-        )
-        cursor = connection.cursor()
-        cursor.execute("""SELECT name FROM guests;""")
 
-    except Exception:
-        create()
+# Таблица с группами
+class groups(database):
+    __tablename__ = 'groups'
 
-    else:
-        print('[INFO] DB already exists!')
+    id = Column(Integer, primary_key=True)
+    group_info = Column(String)
 
+
+# Таблица с участниками
+class guests(database):
+    __tablename__ = 'guests'
+
+    id = Column(Integer, primary_key=True)
+    surname = Column(String)
+    name = Column(String)
+    patronymic = Column(String)
+    phone_number = Column(String)
+    tag = Column(String)
+    vk_link = Column(String, unique=True)
+    first_group = Column(Boolean)
+    second_group = Column(Boolean)
+    third_group = Column(Boolean)
+    fourth_group = Column(Boolean)
+    fifth_group = Column(Boolean)
+    sixth_group = Column(Boolean)
+    seventh_group = Column(Boolean)
+    eighth_group = Column(Boolean)
+    ninth_group = Column(Boolean)
+    tenth_group = Column(Boolean)
+    eleventh_grup = Column(Boolean)
+    twelfth_group = Column(Boolean)
+    thirteenth_group = Column(Boolean)
+
+
+# Таблица с оргами
+class orgs(database):
+    __tablename__ = 'orgs'
+
+    id = Column(Integer, primary_key=True)
+    surname = Column(String)
+    name = Column(String)
+    patronymic = Column(String)
+    vk_org_link = Column(String)
+    first_org_group = Column(Boolean)
+    second_org_group = Column(Boolean)
+
+
+
+# Таблица рассылок
+class sendings(database):
+    __tablename__ = 'sendings'
+
+    mail_name = Column(String, primary_key=True)
+    send_time = Column(DateTime)
+    group_num = Column(Integer, ForeignKey('groups', onupdate='cascade', ondelete='cascade'))
+    text = Column(String)
+    media = Column(String)
+
+
+
+# Таблица с инфой о посвяте
+class info(database):
+    __tablename__ = 'info'
+
+    question = Column(String, primary_key=True)
+    answer = Column(String)
+
+
+# Таблица с тех саппортом
+class tech_support(database):
+    __tablename__ = 'tech_support'
+
+    id = Column(Integer, primary_key=True)
+    vk_link = Column(String, ForeignKey('guests.vk_link', onupdate='cascade', ondelete='cascade'))
+    per_question = Column(String)
+    status = Column(Boolean)
+
+
+# Создание таблиц
+def create_tables(engine: Engine) -> None:
+    database.metadata.create_all(engine)
+
+
+# Создание сессии
+def get_session(engine: Engine) -> Session:
+    return sessionmaker(bind=engine)()
+
+
+# Удаление таблиц
+def delete_tables():
+    groups.__table__.drop(engine)
+    guests.__table__.drop(engine)
+    orgs.__table__.drop(engine)
+    sendings.__table__.drop(engine)
+    info.__table__.drop(engine)
+    tech_support.__table__.drop(engine)
+
+
+if __name__ == "__main__":
+    create_tables(engine)
