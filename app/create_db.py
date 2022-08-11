@@ -15,7 +15,7 @@ engine = create_engine(db_path, pool_size=1000)
 class groups(database):
     __tablename__ = 'groups'
 
-    id = Column(Integer, primary_key=True)
+    group_num = Column(Integer, primary_key=True)
     group_info = Column(String)
 
 
