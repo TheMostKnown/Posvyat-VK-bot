@@ -3,16 +3,16 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import Engine
 from sqlalchemy import create_engine
-from vk_config import db_path
+from app.config import settings
 
 
 # Создание движка
 database = declarative_base()
-engine = create_engine(db_path, pool_size=1000)
+engine = create_engine(settings.DB_PATH, pool_size=1000)
 
 
 # Таблица с группами
-class groups(database):
+class Groups(database):
     __tablename__ = 'groups'
 
     group_num = Column(Integer, primary_key=True)
@@ -20,7 +20,7 @@ class groups(database):
 
 
 # Таблица с участниками
-class guests(database):
+class Guests(database):
     __tablename__ = 'guests'
 
     id = Column(Integer, primary_key=True)
@@ -46,7 +46,7 @@ class guests(database):
 
 
 # Таблица с оргами
-class orgs(database):
+class Orgs(database):
     __tablename__ = 'orgs'
 
     id = Column(Integer, primary_key=True)
@@ -58,9 +58,8 @@ class orgs(database):
     second_org_group = Column(Boolean)
 
 
-
 # Таблица рассылок
-class sendings(database):
+class Sendings(database):
     __tablename__ = 'sendings'
 
     mail_name = Column(String, primary_key=True)
@@ -70,9 +69,8 @@ class sendings(database):
     media = Column(String)
 
 
-
 # Таблица с инфой о посвяте
-class info(database):
+class Info(database):
     __tablename__ = 'info'
 
     question = Column(String, primary_key=True)
@@ -80,7 +78,7 @@ class info(database):
 
 
 # Таблица с тех саппортом
-class tech_support(database):
+class TechSupport(database):
     __tablename__ = 'tech_support'
 
     id = Column(Integer, primary_key=True)
@@ -101,12 +99,12 @@ def get_session(engine: Engine) -> Session:
 
 # Удаление таблиц
 def delete_tables():
-    groups.__table__.drop(engine)
-    guests.__table__.drop(engine)
-    orgs.__table__.drop(engine)
-    sendings.__table__.drop(engine)
-    info.__table__.drop(engine)
-    tech_support.__table__.drop(engine)
+    Groups.__table__.drop(engine)
+    Guests.__table__.drop(engine)
+    Orgs.__table__.drop(engine)
+    Sendings.__table__.drop(engine)
+    Info.__table__.drop(engine)
+    TechSupport.__table__.drop(engine)
 
 
 if __name__ == "__main__":

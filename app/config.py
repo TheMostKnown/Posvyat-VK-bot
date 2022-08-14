@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     DIR_NAME: str = os.path.dirname(__file__)
 
     VK_TOKEN: Optional[str]
+    TECH_SUPPORT_VK_ID: Optional
+
+    DB_PATH: Optional[str]
 
     GOOGLE_TABLE_ID: Optional[str]
     GOOGLE_CREDS_PATH: Optional[str]
