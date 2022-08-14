@@ -40,7 +40,7 @@ class guests(database):
     eighth_group = Column(Boolean)
     ninth_group = Column(Boolean)
     tenth_group = Column(Boolean)
-    eleventh_grup = Column(Boolean)
+    eleventh_group = Column(Boolean)
     twelfth_group = Column(Boolean)
     thirteenth_group = Column(Boolean)
 
