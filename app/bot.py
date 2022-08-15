@@ -2,10 +2,9 @@ import vk_api
 import psycopg2
 
 from vk_api.longpoll import VkLongPoll, VkEventType
-from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
 
-from vk_tools import Keyboard
+from vk_tools import admin_keyboard, user_keyboard
 from vk_events import send_message
 from vk_config import token_vk
 from create_db import engine, get_session, guests, orgs, groups, info, tech_support, sendings
@@ -43,6 +42,6 @@ def start():
 
 
                 if is_admin(user_id, event):
-                    send_message(vk_session, user_id, "Hi, admin!")
+                    send_message(vk_session, user_id, "Hi, admin!", keyboard = admin_keyboard)
                 else:
-                    send_message(vk_session, user_id, "Hi, user!")
+                    send_message(vk_session, user_id, "Hi, user!", keyboard = user_keyboard)
