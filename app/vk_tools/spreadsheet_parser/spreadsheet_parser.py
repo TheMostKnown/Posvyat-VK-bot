@@ -9,14 +9,16 @@ from app.config import settings
 
 
 def get_creds(creds_file: str, token_file: str) -> Credentials:
-    """
-    Parameter:
-        creds_file : str
-            name of the file with saved credentials
-        token_file : str
-            name of the file with saved auth token
-    Returns:
-        credentials for authorization in google api
+    """Function retrieves all non-empty rows from spreadsheet
+
+    :param creds_file: absolute path to the file with saved credentials
+    :type creds_file: str
+
+    :param token_file : absolute path to the file with saved auth token
+    :type token_file: str
+
+    :return: credentials for authorization in google api
+    :rtype: Credentials
     """
 
     SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly',
@@ -45,16 +47,20 @@ def get_data(
         creds_file_name: str = 'credentials.json',
         token_file_name: str = 'token.json'
 ) -> dict:
-    """
-    Parameter:
-        spreadsheet_id : str
-            id of google spreadsheet
-        creds_file : str
-            name of the file with saved credentials
-        token_file : str
-            name of the file with saved auth token
-    Returns:
-        dict: all sheets' data in lists
+    """Retrieves all non-empty rows from spreadsheet
+
+    :param creds_file_name:
+    :param spreadsheet_id: id of google spreadsheet
+    :type spreadsheet_id: str
+
+    :param creds_file_name: absolute path to the file with saved credentials
+    :type creds_file_name: str
+
+    :param token_file_name : absolute path to the file with saved auth token
+    :type token_file_name: str
+
+    :return: all sheets' data in lists
+    :rtype: dict
     """
 
     tables = dict()
@@ -62,7 +68,6 @@ def get_data(
     creds = get_creds(creds_file_name, token_file_name)
 
     service = build('sheets', 'v4', credentials=creds)
-
     request = service.spreadsheets().get(
         spreadsheetId=spreadsheet_id,
         includeGridData=True
@@ -73,9 +78,7 @@ def get_data(
 
     for sheet in sheets:
         sheet_title = sheet['properties']['title']
-
         tables[sheet_title] = []
-
         grid_data = sheet['data']
 
         for data in grid_data:
@@ -85,18 +88,14 @@ def get_data(
             rowData = data['rowData']
 
             for i, row in enumerate(rowData):
-
                 if 'values' in row.keys():
-
                     for j, value in enumerate(row['values']):
-
                         if value and 'formatted_value' in value.keys():
                             row['values'][j] = value['formatted_value']
                         else:
                             row['values'][j] = None
 
                     tables[sheet_title].append(row['values'])
-
                 else:
                     tables[sheet_title].append(None)
 
@@ -117,7 +116,10 @@ class SheetNotSetError(SpreadsheetError):
 
 class Spreadsheet:
     def __init__(self):
-        self.credentials = get_creds(settings.DIR_NAME + settings.GOOGLE_CREDS_PATH)
+        self.credentials = get_creds(
+            settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
+            settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH
+        )
         self.service = build('sheets', 'v4', credentials=self.credentials, cache_discovery=False)
         self.drive_service = build('drive', 'v3', credentials=self.credentials, cache_discovery=False)
         self.spreadsheet_id = None

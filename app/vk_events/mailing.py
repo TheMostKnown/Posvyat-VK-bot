@@ -34,7 +34,7 @@ def messages(vk: vk_api.vk_api.VkApiMethod,
     if len(args) > 1 and args[1].isdigit():
         params['group_number'] = int(args[1])
     elif len(args) > 1 and args[1]:
-        group = session.query(Groups).filter_by(name=args[1]).first()
+        group = session.query(Groups).filter_by(group_num=args[1]).first()
         if not group:
             return 4
         params['group_number'] = group.group_num

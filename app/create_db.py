@@ -55,7 +55,10 @@ class Sendings(database):
     send_time = Column(DateTime)
     group_num = Column(Integer, ForeignKey('groups', onupdate='cascade', ondelete='cascade'))
     text = Column(String)
-    media = Column(String)
+    pics = Column(String)
+    video = Column(String)
+    reposts = Column(String)
+    docs = Column(String)
 
 
 # Таблица с инфой о посвяте
