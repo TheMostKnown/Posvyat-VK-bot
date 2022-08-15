@@ -7,11 +7,11 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
 from vk_tools import Keyboard
 from vk_events import send_message
-from vk_config import token_vk
-from create_db import engine, get_session, guests, orgs, groups, info, tech_support, sendings
+from config import settings
+from create_db import engine, get_session, Guests, Orgs, Groups, Info, TechSupport, Sendings
 
 
-vk_session = vk_api.VkApi(token=token_vk)
+vk_session = vk_api.VkApi(token=settings.VK_TOKEN)
 
 
 def is_admin(id_p, event_p):
