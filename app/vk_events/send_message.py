@@ -13,7 +13,8 @@ def send_message(
         chat_id: int,
         text: str,
         keyboard: Optional[vk_api.keyboard.VkKeyboard] = None,
-        attachments: Optional[List[str]] = None) -> int:
+        attachments: Optional[List[str]] = None
+) -> int:
     """Function sends message to certain user.
 
     :param vk: started VK session with authorization in group

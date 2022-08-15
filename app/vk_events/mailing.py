@@ -8,9 +8,11 @@ from send_message import send_message
 
 
 # args = [Sendings.mail_name, None | Groups.group_num | Groups.group_info]
-def messages(vk: vk_api.vk_api.VkApiMethod,
-             session: Session,
-             args: Optional[List[str]] = None) -> int:
+def messages(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        args: Optional[List[str]] = None
+) -> int:
     """ The function of launching mailing in VK.
 
     :param vk: session for connecting to VK API

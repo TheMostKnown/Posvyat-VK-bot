@@ -6,9 +6,10 @@ from send_message import send_message
 from app.config import settings
 
 
-def open_issues(vk: vk_api.vk_api.VkApiMethod,
-                session: Session,
-                ) -> int:
+def open_issues(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session
+) -> int:
     """ The function of sending open issues in VK.
 
         :param vk: session for connecting to VK API

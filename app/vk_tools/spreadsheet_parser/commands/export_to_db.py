@@ -1,10 +1,10 @@
-from datetime import datetime
 import json
 
 from sqlalchemy.orm import Session
 
 from app.vk_tools.spreadsheet_parser.spreadsheet_parser import get_data
 from app.create_db import Sendings
+
 
 def get_sendings(
         session: Session,
@@ -57,3 +57,13 @@ def get_sendings(
         )
 
     session.commit()
+
+
+def get_organizers(
+        session: Session,
+        spreadsheet_id: str,
+        creds_file_name: str,
+        token_file_name: str,
+        sheet_name: str
+) -> None:
+
