@@ -16,8 +16,11 @@ class Settings(BaseSettings):
     DB_PATH: Optional[str]
 
     GOOGLE_TABLE_ID: Optional[str]
+    GOOGLE_FOLDER_ID: Optional[str]
     GOOGLE_CREDS_PATH: Optional[str]
     GOOGLE_TOKEN_PATH: Optional[str]
+
+    DELAY: Optional[str]
 
     class Config:
         env_prefix = 'POSVYAT_VK_'

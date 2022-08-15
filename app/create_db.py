@@ -30,19 +30,8 @@ class Guests(database):
     phone_number = Column(String)
     tag = Column(String)
     vk_link = Column(String, unique=True)
-    first_group = Column(Boolean)
-    second_group = Column(Boolean)
-    third_group = Column(Boolean)
-    fourth_group = Column(Boolean)
-    fifth_group = Column(Boolean)
-    sixth_group = Column(Boolean)
-    seventh_group = Column(Boolean)
-    eighth_group = Column(Boolean)
-    ninth_group = Column(Boolean)
-    tenth_group = Column(Boolean)
-    eleventh_group = Column(Boolean)
-    twelfth_group = Column(Boolean)
-    thirteenth_group = Column(Boolean)
+    groups = Column(String)
+    texts = Column(String)
 
 
 # Таблица с оргами
@@ -54,8 +43,8 @@ class Orgs(database):
     name = Column(String)
     patronymic = Column(String)
     vk_org_link = Column(String)
-    first_org_group = Column(Boolean)
-    second_org_group = Column(Boolean)
+    groups = Column(String)
+    texts = Column(String)
 
 
 # Таблица рассылок

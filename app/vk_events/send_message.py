@@ -57,11 +57,20 @@ def send_message(
         user = session.query(Guests).filter_by(id=chat_id).first()
         organizer = session.query(Orgs).filter_by(id=chat_id).first()
 
-        if organizer:
-            user = organizer
-
         if user:
-            domain = session.query(Guests).filter_by(id=chat_id).first().domain
+            domain = session.query(Guests).filter_by(id=chat_id).first().vk_link
+
+            error_text = f'Пользователю vk.com/{domain} ({chat_id})' \
+                         f'не отправилось сообщение "{text}"\n' \
+                         f'По причине: "{e}"'
+            vk.messages.send(
+                user_id=settings.TECH_SUPPORT_VK_ID,
+                message=error_text,
+                random_id=get_random_id()
+            )
+
+        elif organizer:
+            domain = session.query(Guests).filter_by(id=chat_id).first().vk_org_link
 
             error_text = f'Пользователю vk.com/{domain} ({chat_id})' \
                          f'не отправилось сообщение "{text}"\n' \
