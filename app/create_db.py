@@ -43,8 +43,7 @@ class Orgs(database):
     name = Column(String)
     patronymic = Column(String)
     vk_org_link = Column(String)
-    groups = Column(String)
-    texts = Column(String)
+    group = Column(String)
 
 
 # Таблица рассылок

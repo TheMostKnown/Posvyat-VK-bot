@@ -3,7 +3,7 @@ import json
 from sqlalchemy.orm import Session
 
 from app.vk_tools.spreadsheet_parser.spreadsheet_parser import get_data
-from app.create_db import Sendings
+from app.create_db import Sendings, Orgs
 
 
 def get_sendings(
@@ -67,3 +67,29 @@ def get_organizers(
         sheet_name: str
 ) -> None:
 
+    organizers_sheet = get_data(
+        spreadsheet_id,
+        creds_file_name,
+        token_file_name
+    )[sheet_name]
+
+    for row in organizers_sheet:
+        chat_id = row[0]
+        name = row[1]
+        surname = row[2]
+        patronymic = row[3]
+        vk_link = row[4]
+        group = row[5]
+
+        session.add(
+            Orgs(
+                id=chat_id,
+                name=name,
+                surname=surname,
+                patronymic=patronymic,
+                vk_org_link=vk_link,
+                group=group
+            )
+        )
+
+    session.commit()

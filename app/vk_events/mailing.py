@@ -54,16 +54,5 @@ def messages(
                 attachments=[] if not text.attachments else json.loads(text.attachments)
             )
 
-    for org in session.query(Orgs).filter_by(**params):
-        groups = json.loads(org.groups)
-
-        if params['group_number'] in groups:
-            send_message(
-                vk=vk,
-                chat_id=org.id,
-                text=text.text,
-                attachments=[] if not text.attachments else json.loads(text.attachments)
-            )
-
     session.commit()
     return 0
