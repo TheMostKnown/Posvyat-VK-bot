@@ -58,7 +58,6 @@ class orgs(database):
     second_org_group = Column(Boolean)
 
 
-
 # Таблица рассылок
 class sendings(database):
     __tablename__ = 'sendings'
@@ -68,7 +67,6 @@ class sendings(database):
     group_num = Column(Integer, ForeignKey('groups', onupdate='cascade', ondelete='cascade'))
     text = Column(String)
     media = Column(String)
-
 
 
 # Таблица с инфой о посвяте
