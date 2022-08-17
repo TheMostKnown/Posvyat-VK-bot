@@ -1,5 +1,3 @@
-import json
-
 import schedule
 from sqlalchemy.orm import Session
 
