@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     GOOGLE_CREDS_PATH: Optional[str]
     GOOGLE_TOKEN_PATH: Optional[str]
 
+    DB_PATH: Optional[str]
+
     class Config:
         env_prefix = 'POSVYAT_VK_'
         env_file = f'{dir_name}\secrets\.env'
