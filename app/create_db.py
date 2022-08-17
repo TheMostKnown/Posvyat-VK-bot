@@ -32,7 +32,6 @@ class Guests(database):
     vk_link = Column(String, unique=True)
     groups = Column(String)
 
-
 # Таблица с оргами
 class Orgs(database):
     __tablename__ = 'orgs'
