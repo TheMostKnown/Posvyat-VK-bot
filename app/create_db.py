@@ -30,7 +30,7 @@ class Guests(database):
     phone_number = Column(String)
     tag = Column(String)
     vk_link = Column(String, unique=True)
-    groups = Column(string)
+    groups = Column(String)
 
 
 # Таблица с оргами
