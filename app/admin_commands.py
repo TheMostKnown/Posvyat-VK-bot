@@ -21,6 +21,8 @@ def is_commands(user_id, event, text, vk_session, is_admin):
             send_message(vk_session, user_id, "/get_members_all - список всех участников (нерекомендуемая команда)")
             send_message(vk_session, user_id,
                          "/start_mailing_all name, где name имя рассылки. Начинает всеобщую спам-атаку.")
+            send_message(vk_session, user_id,
+                         "/add_info (guestion?) answer - добавить пользователю новую кнопку в его информационную клавиатуру, где в скобках название кнопки, далее ответ на вопрос из кнопки")
 
         else:
 
@@ -319,9 +321,9 @@ def is_get_unread(user_id, event, text, vk_session, is_admin):
 
 def is_info(user_id, event, text, vk_session, session, is_admin):
 
-    if is_admin(user_id, event):
+    if text.startswith("/add_info"):
 
-        if text.startswith("/add_info"):
+        if is_admin(user_id, event):
 
             if (admin_add_info(session, text)):
                 send_message(vk_session, user_id, "Вопрос добавлен")
