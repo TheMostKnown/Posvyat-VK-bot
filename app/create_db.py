@@ -45,7 +45,6 @@ class Orgs(database):
     vk_org_link = Column(String)
     group = Column(String)
 
-
 # Таблица рассылок
 class Sendings(database):
     __tablename__ = 'sendings'
@@ -58,7 +57,6 @@ class Sendings(database):
     video = Column(String)
     reposts = Column(String)
     docs = Column(String)
-
 
 # Таблица с инфой о посвяте
 class Info(database):
