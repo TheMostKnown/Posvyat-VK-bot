@@ -12,7 +12,7 @@ def is_commands(user_id, event, text, vk_session, is_admin):
             send_message(vk_session, user_id,
                          "/start_mailing name first_group third_group ninth_group ... и так далее через пробел, где name - имя рассылки, а first_group, second_group... группы пользователей, в которых должно стоять значение True.\nНапример, чтобы запустить рассылку с именем 'test' для тех, кто оплатил билет и подписался на бота в тг, нужно ввести команду\n'/start_mailing test first_group twelfth_group', а для тех, кто просто оплатил билет,\n'/start_mailing test first_group'")
             send_message(vk_session, user_id,
-                         "/give_level id level True/False, где level - название группы (first_group, second_group..., но только одна группа на одну команду!), id -  айди пользователя")
+                         "/give_level id True/False first_group third_group ninth_group ... и так далее через пробел, где first_group, second_group... группы пользователей, в которых должно стоять значение True, id -  айди пользователя")
             send_message(vk_session, user_id,
                          "/get_members first_group third_group ninth_group ..., и так далее через пробел, где first_group, second_group... группы пользователей, в которых должно стоять значение True.")
             send_message(vk_session, user_id, "/get_orgs показать список всех организаторов")
@@ -34,19 +34,6 @@ def is_get_mailings(user_id, event, text, vk_session, is_admin):
 
             send_message(vk_session, user_id, "Mailing list:")
             session = get_session(engine)
-
-            #dff
-            q = session.query(sendings)
-            for c in q:
-                session.delete(c)
-            m1 = sendings(mail_name="1", text="dfejfejejefjefj")
-            m2 = sendings(mail_name="2", text="dfejfejejefjefj")
-            m3 = sendings(mail_name="3", text="dfejfejejefjefj")
-            m4 = sendings(mail_name="4", text="dfejfejejefjefj")
-            m5 = sendings(mail_name="5", text="dfejfejejefjefj")
-            session.add_all([m1, m2, m3, m4, m5])
-            session.commit()
-            #dff
 
             q = session.query(sendings)
 
@@ -160,26 +147,42 @@ def is_give_level(user_id, event, text, vk_session, is_admin):
 
             message = text.split()
             session = get_session(engine)
+            groupps = ["first_group", "second_group", "third_group", "fourth_group", "fifth_group", "sixth_group",
+                       "seventh_group", "eighth_group", "ninth_group", "tenth_group", "eleventh_grup",
+                       "twelfth_group", "thirteenth_group", "true", "false"]
 
-            try:
+            flag = 0
+            for i in range(2, len(message)):
+                if not(message[i] in groupps):
+                    flag = 1
 
-                q = session.query(guests).get(int(message[1]))
-                groupps = ["first_group", "second_group", "third_group", "fourth_group", "fifth_group", "sixth_group",
-                           "seventh_group", "eighth_group", "ninth_group", "tenth_group", "eleventh_grup",
-                           "twelfth_group", "thirteenth_group"]
+            if flag == 0:
 
-                if message[2] in groupps:
+                try:
 
-                    setattr(q, message[2], eval(message[3].capitalize()))
-                    session.add(q)
-                    session.commit()
-                    send_message(vk_session, user_id, "Done!")
+                    q = session.query(guests).get(int(message[1]))
+                    ind = 0
 
-                else:
+                    for i in range(3, len(message)):
 
+                        ind = 1
+                        setattr(q, message[i], eval(message[2].capitalize()))
+
+                    if ind == 1:
+
+                        session.add(q)
+                        session.commit()
+                        send_message(vk_session, user_id, "Done!")
+
+                    else:
+
+                        send_message(vk_session, user_id, "Invalid command!")
+
+                except BaseException:
+    
                     send_message(vk_session, user_id, "Invalid command!")
 
-            except BaseException:
+            else:
 
                 send_message(vk_session, user_id, "Invalid command!")
 
@@ -308,8 +311,7 @@ def is_get_unread(user_id, event, text, vk_session, is_admin):
 
             for i in conversation_inf["items"]:
                 if i["last_message"]["from_id"] != user_id:
-                    stroka = "https://vk.com/id" + str(i["last_message"]["from_id"]) + "\n" + str(
-                        i["last_message"]["text"])
+                    stroka = f"https://vk.com/id{str(i['last_message']['from_id'])}\n{str(i['last_message']['text'])}"
                     send_message(vk_session, user_id, stroka)
 
         else:
