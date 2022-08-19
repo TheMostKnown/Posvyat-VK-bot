@@ -25,9 +25,6 @@ def is_commands(user_id, event, text, vk_session, is_admin):
 
             send_message(vk_session, user_id, "No permission!")
 
-
-def is_get_mailings(user_id, event, text, vk_session, is_admin):
-
     if text == "/get_mailings":
 
         if is_admin(user_id, event):
@@ -35,19 +32,16 @@ def is_get_mailings(user_id, event, text, vk_session, is_admin):
             send_message(vk_session, user_id, "Mailing list:")
             session = get_session(engine)
 
-            q = session.query(sendings)
+            query = session.query(sendings)
 
-            for c in q:
+            for row in query:
 
-                stroka = str(c.mail_name) + " " + str(c.send_time) + " " + str(c.group_num) + " \n\n" + str(c.text) + "\n\n" + str(c.media)
-                send_message(vk_session, user_id, stroka)
+                message = f"{str(row.mail_name)}\n{str(row.send_time)}\n{str(row.group_num)}\n\n{str(row.text)}\n\n{str(row.media)}"
+                send_message(vk_session, user_id, message)
 
         else:
 
             send_message(vk_session, user_id, "No permission!")
-
-
-def is_start_mailing_all(user_id, event, text, vk_session, is_admin):
 
     if text[:19] == "/start_mailing_all ":
 
@@ -55,19 +49,19 @@ def is_start_mailing_all(user_id, event, text, vk_session, is_admin):
 
             message = text.split()
             session = get_session(engine)
-            q = session.query(sendings)
+            query_s = session.query(sendings)
             ind = 0
 
-            for c in q:
+            for row_s in query_s:
 
-                if c.mail_name.lower() == message[1]:
+                if row_s.mail_name.lower() == message[1]:
 
-                    qq = session.query(guests)
+                    query_org = session.query(guests)
                     ind = 1
 
-                    for cc in qq:
-                        guest_id = cc.vk_link.split('/')[3][2:]
-                        send_message(vk_session, guest_id, c.text)
+                    for row_org in query_org:
+                        guest_id = row_org.vk_link.split('/')[3][2:]
+                        send_message(vk_session, guest_id, row_s.text)
 
                     send_message(vk_session, user_id, "Mailing done!")
 
@@ -80,48 +74,44 @@ def is_start_mailing_all(user_id, event, text, vk_session, is_admin):
 
             send_message(vk_session, user_id, "No permission!")
 
-
-def is_start_mailing(user_id, event, text, vk_session, is_admin):
-
     if text[:15] == "/start_mailing ":
 
         if is_admin(user_id, event):
 
             message = text.split()
             session = get_session(engine)
-            groupps = ["/get_members", "first_group", "second_group", "third_group", "fourth_group", "fifth_group",
+            levels = ["first_group", "second_group", "third_group", "fourth_group", "fifth_group",
                        "sixth_group", "seventh_group", "eighth_group", "ninth_group", "tenth_group", "eleventh_grup",
                        "twelfth_group", "thirteenth_group"]
             flag = 0
-
             for i in range(2, len(message)):
-                if not (message[i] in groupps):
+                if int(message[i]) >= 14 or int(message[i]) <= 0:
                     flag = 1
 
             if flag == 0:
 
-                q = session.query(sendings)
+                query_s = session.query(sendings)
                 ind = 0
 
-                for c in q:
+                for row_s in query_s:
 
-                    if c.mail_name.lower() == message[1]:
+                    if row_s.mail_name.lower() == message[1]:
 
-                        qq = session.query(guests)
+                        query_org = session.query(guests)
                         ind = 1
 
-                        for cc in qq:
+                        for row_org in query_org:
 
                             flag = 0
 
                             for i in range(2, len(message)):
 
-                                if str(getattr(cc, message[i], True)) != "True":
+                                if str(getattr(row_org, levels[message[i]], True)) != "True":
                                     flag = 1
 
                             if flag == 0:
-                                guest_id = cc.vk_link.split('/')[3][2:]
-                                send_message(vk_session, guest_id, c.text)
+                                guest_id = row_org.vk_link.split('/')[3][2:]
+                                send_message(vk_session, guest_id, row_s.text)
 
                         send_message(vk_session, user_id, "Mailing done!")
 
@@ -138,39 +128,36 @@ def is_start_mailing(user_id, event, text, vk_session, is_admin):
 
             send_message(vk_session, user_id, "No permission!")
 
-
-def is_give_level(user_id, event, text, vk_session, is_admin):
-
     if text[:12] == "/give_level ":
 
         if is_admin(user_id, event):
 
             message = text.split()
             session = get_session(engine)
-            groupps = ["first_group", "second_group", "third_group", "fourth_group", "fifth_group", "sixth_group",
+            levels = ["first_group", "second_group", "third_group", "fourth_group", "fifth_group", "sixth_group",
                        "seventh_group", "eighth_group", "ninth_group", "tenth_group", "eleventh_grup",
                        "twelfth_group", "thirteenth_group", "true", "false"]
 
             flag = 0
             for i in range(2, len(message)):
-                if not(message[i] in groupps):
+                if int(message[i]) >= 14 or int(message[i]) <= 0:
                     flag = 1
 
             if flag == 0:
 
                 try:
 
-                    q = session.query(guests).get(int(message[1]))
+                    query = session.query(guests).get(int(message[1]))
                     ind = 0
 
                     for i in range(3, len(message)):
 
                         ind = 1
-                        setattr(q, message[i], eval(message[2].capitalize()))
+                        setattr(query, message[i], eval(message[2].capitalize()))
 
                     if ind == 1:
 
-                        session.add(q)
+                        session.add(query)
                         session.commit()
                         send_message(vk_session, user_id, "Done!")
 
@@ -190,37 +177,31 @@ def is_give_level(user_id, event, text, vk_session, is_admin):
 
             send_message(vk_session, user_id, "No permission!")
 
-
-def is_get_members_all(user_id, event, text, vk_session, is_admin):
-
     if text == "/get_members_all":
 
         if is_admin(user_id, event):
 
             session = get_session(engine)
-            q = session.query(guests)
+            query = session.query(guests)
 
-            for c in q:
-                stroka = str(c.id) + " " + str(c.name) + " " + str(c.surname) + "\n" + str(
-                    c.vk_link) + "\n\n" + "Написал боту:" + str(c.first_group) + "\n\n" + "Вступил в группу:" + str(
-                    c.second_group) + "\n\n" + "Зарегистрировался:" + str(c.third_group) + "\n\n" + "Оплатил:" + str(
-                    c.fourth_group) + "\n\n" + "Отметил в форме трансфера - Парк победы:" + str(
-                    c.fifth_group) + "\n\n" + "Отметил в форме трансфера - Одинцово:" + str(
-                    c.sixth_group) + "\n\n" + "Отметил в форме трансфера - самостоятельно:" + str(
-                    c.seventh_group) + "\n\n" + "Прошел форму на расселение:" + str(
-                    c.eighth_group) + "\n\n" + "Согласовал ли трансфер:" + str(
-                    c.ninth_group) + "\n\n" + "Согласовал ли расселение:" + str(
-                    c.tenth_group) + "\n\n" + "Заказал мерч:" + str(
-                    c.eleventh_grup) + "\n\n" + "Подписался на бота в ТГ:" + str(
-                    c.twelfth_group) + "\n\n" + "Вернул ли билет:" + str(c.thirteenth_group)
+            for row in query:
+                stroka = str(row.id) + " " + str(row.name) + " " + str(row.surname) + "\n" + str(
+                    row.vk_link) + "\n\n" + "Написал боту:" + str(row.first_group) + "\n\n" + "Вступил в группу:" + str(
+                    row.second_group) + "\n\n" + "Зарегистрировался:" + str(row.third_group) + "\n\n" + "Оплатил:" + str(
+                    row.fourth_group) + "\n\n" + "Отметил в форме трансфера - Парк победы:" + str(
+                    row.fifth_group) + "\n\n" + "Отметил в форме трансфера - Одинцово:" + str(
+                    row.sixth_group) + "\n\n" + "Отметил в форме трансфера - самостоятельно:" + str(
+                    row.seventh_group) + "\n\n" + "Прошел форму на расселение:" + str(
+                    row.eighth_group) + "\n\n" + "Согласовал ли трансфер:" + str(
+                    row.ninth_group) + "\n\n" + "Согласовал ли расселение:" + str(
+                    row.tenth_group) + "\n\n" + "Заказал мерч:" + str(
+                    row.eleventh_grup) + "\n\n" + "Подписался на бота в ТГ:" + str(
+                    row.twelfth_group) + "\n\n" + "Вернул ли билет:" + str(row.thirteenth_group)
                 send_message(vk_session, user_id, stroka)
 
         else:
 
             send_message(vk_session, user_id, "No permission!")
-
-
-def is_get_members(user_id, event, text, vk_session, is_admin):
 
     if text[:13] == "/get_members ":
 
@@ -228,45 +209,45 @@ def is_get_members(user_id, event, text, vk_session, is_admin):
 
             session = get_session(engine)
             message = text.split()
-            groupps = ["/get_members", "first_group", "second_group", "third_group", "fourth_group", "fifth_group",
+            levels = ["/get_members", "first_group", "second_group", "third_group", "fourth_group", "fifth_group",
                        "sixth_group", "seventh_group", "eighth_group", "ninth_group", "tenth_group", "eleventh_grup",
                        "twelfth_group", "thirteenth_group"]
             flag = 0
 
             for i in message:
-                if not (i in groupps):
+                if not (i in levels):
                     flag = 1
 
             if flag == 0:
 
-                q = session.query(guests)
+                query = session.query(guests)
                 ind = 0
 
-                for c in q:
+                for row in query:
 
                     flag = 0
 
                     for i in message:
 
-                        if str(getattr(c, i, True)) != "True":
+                        if str(getattr(row, i, True)) != "True":
                             flag = 1
 
                     if flag == 0:
                         ind = 1
-                        stroka = str(c.id) + " " + str(c.name) + " " + str(c.surname) + "\n" + str(
-                            c.vk_link) + "\n\n" + "Написал боту:" + str(
-                            c.first_group) + "\n\n" + "Вступил в группу:" + str(
-                            c.second_group) + "\n\n" + "Зарегистрировался:" + str(
-                            c.third_group) + "\n\n" + "Оплатил:" + str(
-                            c.fourth_group) + "\n\n" + "Отметил в форме трансфера - Парк победы:" + str(
-                            c.fifth_group) + "\n\n" + "Отметил в форме трансфера - Одинцово:" + str(
-                            c.sixth_group) + "\n\n" + "Отметил в форме трансфера - самостоятельно:" + str(
-                            c.seventh_group) + "\n\n" + "Прошел форму на расселение:" + str(
-                            c.eighth_group) + "\n\n" + "Согласовал ли трансфер:" + str(
-                            c.ninth_group) + "\n\n" + "Согласовал ли расселение:" + str(
-                            c.tenth_group) + "\n\n" + "Заказал мерч:" + str(
-                            c.eleventh_grup) + "\n\n" + "Подписался на бота в ТГ:" + str(
-                            c.twelfth_group) + "\n\n" + "Вернул ли билет:" + str(c.thirteenth_group)
+                        stroka = str(row.id) + " " + str(row.name) + " " + str(row.surname) + "\n" + str(
+                            row.vk_link) + "\n\n" + "Написал боту:" + str(
+                            row.first_group) + "\n\n" + "Вступил в группу:" + str(
+                            row.second_group) + "\n\n" + "Зарегистрировался:" + str(
+                            row.third_group) + "\n\n" + "Оплатил:" + str(
+                            row.fourth_group) + "\n\n" + "Отметил в форме трансфера - Парк победы:" + str(
+                            row.fifth_group) + "\n\n" + "Отметил в форме трансфера - Одинцово:" + str(
+                            row.sixth_group) + "\n\n" + "Отметил в форме трансфера - самостоятельно:" + str(
+                            row.seventh_group) + "\n\n" + "Прошел форму на расселение:" + str(
+                            row.eighth_group) + "\n\n" + "Согласовал ли трансфер:" + str(
+                            row.ninth_group) + "\n\n" + "Согласовал ли расселение:" + str(
+                            row.tenth_group) + "\n\n" + "Заказал мерч:" + str(
+                            row.eleventh_grup) + "\n\n" + "Подписался на бота в ТГ:" + str(
+                            row.twelfth_group) + "\n\n" + "Вернул ли билет:" + str(row.thirteenth_group)
                         send_message(vk_session, user_id, stroka)
 
                 if ind == 0:
@@ -280,27 +261,21 @@ def is_get_members(user_id, event, text, vk_session, is_admin):
 
             send_message(vk_session, user_id, "No permission!")
 
-
-def is_get_orgs(user_id, event, text, vk_session, is_admin):
-
     if text == "/get_orgs":
 
         if is_admin(user_id, event):
 
             send_message(vk_session, user_id, "Orgs list:")
             session = get_session(engine)
-            q = session.query(orgs)
+            query = session.query(orgs)
 
-            for c in q:
-                stroka = str(c.id) + " " + str(c.name) + " " + str(c.surname) + " \n" + str(c.vk_org_link)
+            for row in query:
+                stroka = str(row.id) + " " + str(row.name) + " " + str(row.surname) + " \n" + str(row.vk_org_link)
                 send_message(vk_session, user_id, stroka)
 
         else:
 
             send_message(vk_session, user_id, "No permission!")
-
-
-def is_get_unread(user_id, event, text, vk_session, is_admin):
 
     if text == "/get_unread":
 
@@ -311,8 +286,8 @@ def is_get_unread(user_id, event, text, vk_session, is_admin):
 
             for i in conversation_inf["items"]:
                 if i["last_message"]["from_id"] != user_id:
-                    stroka = f"https://vk.com/id{str(i['last_message']['from_id'])}\n{str(i['last_message']['text'])}"
-                    send_message(vk_session, user_id, stroka)
+                    message = f"https://vk.com/id{str(i['last_message']['from_id'])}\n{str(i['last_message']['text'])}"
+                    send_message(vk_session, user_id, message)
 
         else:
 
