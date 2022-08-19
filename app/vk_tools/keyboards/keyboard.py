@@ -1,5 +1,6 @@
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
+
 class Keyboard:
     """"
     class for generating and getting keyboards from list of buttons
