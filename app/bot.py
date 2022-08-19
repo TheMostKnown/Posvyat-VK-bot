@@ -1,17 +1,17 @@
 import vk_api
-import psycopg2
-
+from sqlalchemy.orm import Session
 from vk_api.longpoll import VkLongPoll, VkEventType
-from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
-
-from vk_tools import Keyboard
+from app.vk_tools.keyboards import user_keyboard
 from vk_events import send_message
-from vk_config import token_vk
-from create_db import engine, get_session, Guests, Orgs, Groups, Info, TechSupport, Sendings
-from admin_commands import is_commands
+from app.config import settings
+from create_db import engine, Info
+from app.vk_tools.utils import admin_commands
 
-vk_session = vk_api.VkApi(token=token_vk)
+session = Session(bind=engine)
+
+vk_session = vk_api.VkApi(token=settings.VK_TOKEN)
+vk = vk_session.get_api()
 
 
 def is_admin(id_p, event_p):
