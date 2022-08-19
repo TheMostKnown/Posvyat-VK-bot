@@ -1,22 +1,20 @@
 import vk_api
-import psycopg2
-from sqlalchemy.testing import db
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 from vk_api.longpoll import VkLongPoll, VkEventType
 
 from vk_tools import user_keyboard
 from vk_events import send_message
-from vk_config import token_vk
-from create_db import engine, get_session, guests, orgs, groups, info, tech_support, sendings
+from app.config import settings
+from create_db import engine, Guests, Orgs, Groups, Info, TechSupport, Sendings
 import admin_commands
 
 session = Session(bind=engine)
 
-vk_session = vk_api.VkApi(token=token_vk)
+vk_session = vk_api.VkApi(token=settings.VK_TOKEN)
+vk = vk_session.get_api()
 
 
 def is_admin(id_p, event_p):
-
     group_id = vk_session.method("groups.getById", {"peer_id": event_p.peer_id})
     group_inf = vk_session.method("groups.getMembers", {"group_id": group_id[0]["id"], "filter": "managers"})
 
@@ -31,7 +29,6 @@ def is_admin(id_p, event_p):
 
 
 def start():
-
     for event in VkLongPoll(vk_session).listen():
 
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
@@ -59,9 +56,17 @@ def start():
 
             admin_commands.is_info(user_id, event, text, vk_session, session, is_admin)
 
-            
             if text == "информация":
-                send_message(vk_session, user_id, "Доступная информация:", keyboard = user_keyboard.info_keyboard(session.query(info)))
+                send_message(
+                    vk=vk,
+                    chat_id=user_id,
+                    text="Доступная информация:",
+                    keyboard=user_keyboard.info_keyboard(session.query(Info))
+                )
             else:
-                send_message(vk_session, user_id, "Hi, user!", keyboard = user_keyboard.main_keyboard)
-                
+                send_message(
+                    vk=vk,
+                    chat_id=user_id,
+                    text="Hi, user!",
+                    keyboard=user_keyboard.main_keyboard
+                )

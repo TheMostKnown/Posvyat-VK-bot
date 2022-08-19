@@ -1,6 +1,6 @@
 from vk_events import send_message
 from vk_tools import admin_add_info
-from create_db import engine, get_session, guests, orgs, groups, info, tech_support, sendings
+from app.create_db import engine, get_session, Guests, Orgs, Groups, Info, TechSupport, Sendings
 
 
 def is_commands(user_id, event, text, vk_session, is_admin):
@@ -39,19 +39,19 @@ def is_get_mailings(user_id, event, text, vk_session, is_admin):
             session = get_session(engine)
 
             #dff
-            q = session.query(sendings)
+            q = session.query(Sendings)
             for c in q:
                 session.delete(c)
-            m1 = sendings(mail_name="1", text="dfejfejejefjefj")
-            m2 = sendings(mail_name="2", text="dfejfejejefjefj")
-            m3 = sendings(mail_name="3", text="dfejfejejefjefj")
-            m4 = sendings(mail_name="4", text="dfejfejejefjefj")
-            m5 = sendings(mail_name="5", text="dfejfejejefjefj")
+            m1 = Sendings(mail_name="1", text="dfejfejejefjefj")
+            m2 = Sendings(mail_name="2", text="dfejfejejefjefj")
+            m3 = Sendings(mail_name="3", text="dfejfejejefjefj")
+            m4 = Sendings(mail_name="4", text="dfejfejejefjefj")
+            m5 = Sendings(mail_name="5", text="dfejfejejefjefj")
             session.add_all([m1, m2, m3, m4, m5])
             session.commit()
             #dff
 
-            q = session.query(sendings)
+            q = session.query(Sendings)
 
             for c in q:
 
@@ -71,14 +71,14 @@ def is_start_mailing_all(user_id, event, text, vk_session, is_admin):
 
             message = text.split()
             session = get_session(engine)
-            q = session.query(sendings)
+            q = session.query(Sendings)
             ind = 0
 
             for c in q:
 
                 if c.mail_name.lower() == message[1]:
 
-                    qq = session.query(guests)
+                    qq = session.query(Guests)
                     ind = 1
 
                     for cc in qq:
@@ -116,14 +116,14 @@ def is_start_mailing(user_id, event, text, vk_session, is_admin):
 
             if flag == 0:
 
-                q = session.query(sendings)
+                q = session.query(Sendings)
                 ind = 0
 
                 for c in q:
 
                     if c.mail_name.lower() == message[1]:
 
-                        qq = session.query(guests)
+                        qq = session.query(Guests)
                         ind = 1
 
                         for cc in qq:
@@ -166,7 +166,7 @@ def is_give_level(user_id, event, text, vk_session, is_admin):
 
             try:
 
-                q = session.query(guests).get(int(message[1]))
+                q = session.query(Guests).get(int(message[1]))
                 groupps = ["first_group", "second_group", "third_group", "fourth_group", "fifth_group", "sixth_group",
                            "seventh_group", "eighth_group", "ninth_group", "tenth_group", "eleventh_grup",
                            "twelfth_group", "thirteenth_group"]
@@ -198,7 +198,7 @@ def is_get_members_all(user_id, event, text, vk_session, is_admin):
         if is_admin(user_id, event):
 
             session = get_session(engine)
-            q = session.query(guests)
+            q = session.query(Guests)
 
             for c in q:
                 stroka = str(c.id) + " " + str(c.name) + " " + str(c.surname) + "\n" + str(
@@ -239,7 +239,7 @@ def is_get_members(user_id, event, text, vk_session, is_admin):
 
             if flag == 0:
 
-                q = session.query(guests)
+                q = session.query(Guests)
                 ind = 0
 
                 for c in q:
@@ -289,7 +289,7 @@ def is_get_orgs(user_id, event, text, vk_session, is_admin):
 
             send_message(vk_session, user_id, "Orgs list:")
             session = get_session(engine)
-            q = session.query(orgs)
+            q = session.query(Orgs)
 
             for c in q:
                 stroka = str(c.id) + " " + str(c.name) + " " + str(c.surname) + " \n" + str(c.vk_org_link)
@@ -318,6 +318,7 @@ def is_get_unread(user_id, event, text, vk_session, is_admin):
         else:
 
             send_message(vk_session, user_id, "No permission!")
+
 
 def is_info(user_id, event, text, vk_session, session, is_admin):
 

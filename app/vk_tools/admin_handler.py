@@ -2,7 +2,8 @@ import re
 
 from sqlalchemy.orm import Session
 
-from create_db import info
+from app.create_db import Info
+
 
 def admin_add_info(session: Session, text: str) -> True:
     correct = re.search(r"/add_info\b\s*\((.{1,100})\)\s*(.{1,500})\s*", text)
@@ -12,9 +13,9 @@ def admin_add_info(session: Session, text: str) -> True:
     answer = correct[2]
 
     session.add(
-        info(
-            question = question,
-            answer = answer
+        Info(
+            question=question,
+            answer=answer
         )
     )
     session.commit()
