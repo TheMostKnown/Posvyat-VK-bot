@@ -7,11 +7,11 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
 from vk_tools import Keyboard
 from vk_events import send_message
-from config import settings
+from vk_config import token_vk
 from create_db import engine, get_session, Guests, Orgs, Groups, Info, TechSupport, Sendings
+from admin_commands import is_commands
 
-
-vk_session = vk_api.VkApi(token=settings.VK_TOKEN)
+vk_session = vk_api.VkApi(token=token_vk)
 
 
 def is_admin(id_p, event_p):
@@ -38,11 +38,4 @@ def start():
             user_id = event.user_id
             text = event.text.lower()
 
-
-            if text == "start":
-
-
-                if is_admin(user_id, event):
-                    send_message(vk_session, user_id, "Hi, admin!")
-                else:
-                    send_message(vk_session, user_id, "Hi, user!")
+            is_commands(user_id, event, text, vk_session, is_admin)
