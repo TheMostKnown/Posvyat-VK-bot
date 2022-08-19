@@ -1,5 +1,5 @@
-from vk_events import send_message
-from vk_tools import admin_add_info
+from app.vk_events import send_message
+from app.vk_tools import admin_add_info
 from app.create_db import engine, get_session, Guests, Orgs, Groups, Info, TechSupport, Sendings
 
 

@@ -5,8 +5,8 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_tools import user_keyboard
 from vk_events import send_message
 from app.config import settings
-from create_db import engine, Guests, Orgs, Groups, Info, TechSupport, Sendings
-import admin_commands
+from create_db import engine, Info
+from app.vk_tools import admin_commands
 
 session = Session(bind=engine)
 
