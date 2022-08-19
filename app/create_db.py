@@ -5,7 +5,6 @@ from sqlalchemy.engine import Engine
 from sqlalchemy import create_engine
 from app.config import settings
 
-
 # Создание движка
 database = declarative_base()
 engine = create_engine(settings.DB_PATH, pool_size=1000)
@@ -45,6 +44,7 @@ class Orgs(database):
     vk_org_link = Column(String)
     group = Column(String)
 
+
 # Таблица рассылок
 class Sendings(database):
     __tablename__ = 'sendings'
@@ -57,6 +57,7 @@ class Sendings(database):
     video = Column(String)
     reposts = Column(String)
     docs = Column(String)
+
 
 # Таблица с инфой о посвяте
 class Info(database):
@@ -74,6 +75,15 @@ class TechSupport(database):
     vk_link = Column(String, ForeignKey('guests.vk_link', onupdate='cascade', ondelete='cascade'))
     per_question = Column(String)
     status = Column(Boolean)
+
+
+# Таблица с командами
+class Command(database):
+    __tablename__ = 'command'
+
+    name = Column(String, primary_key=True)
+    arguments = Column(String)
+    admin = Column(Boolean)
 
 
 # Создание таблиц
