@@ -83,6 +83,7 @@ class Command(database):
 
     name = Column(String, primary_key=True)
     arguments = Column(String)
+    desc = Column(String)
     admin = Column(Boolean)
 
 
