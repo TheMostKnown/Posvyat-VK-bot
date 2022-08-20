@@ -32,7 +32,6 @@ class Guests(database):
     groups = Column(String)
     texts = Column(String)
 
-
 # Таблица с оргами
 class Orgs(database):
     __tablename__ = 'orgs'
@@ -43,7 +42,6 @@ class Orgs(database):
     patronymic = Column(String)
     vk_org_link = Column(String)
     group = Column(String)
-
 
 # Таблица рассылок
 class Sendings(database):
@@ -58,7 +56,6 @@ class Sendings(database):
     video = Column(String)
     reposts = Column(String)
     docs = Column(String)
-
 
 # Таблица с инфой о посвяте
 class Info(database):
