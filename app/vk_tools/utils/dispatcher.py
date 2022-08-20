@@ -10,7 +10,6 @@ def call_admin_command(
         event: VkBotEvent,
         text: str,
         vk: vk_api.vk_api.VkApiMethod,
-        is_admin: bool
 ) -> None:
 
     if text == '/commands':
