@@ -17,7 +17,6 @@ def call_admin_command(
         event: VkBotEvent,
         text: str
 ) -> None:
-
     text_split = text.split(sep=" ")
     command = text_split[0]
 
@@ -88,20 +87,15 @@ def call_admin_command(
 
 
 def call_guest_command(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
         chat_id: int,
         event: VkBotEvent,
-        text: str,
-        vk: vk_api.vk_api.VkApiMethod,
+        text: str
 ) -> None:
 
-    if text == '/commands':
-        admin_commands.get_commands(
-
-        )
-
-    else:
-        send_message(
-            vk=vk,
-            chat_id=chat_id,
-            text='Не удалось выполнить. Возможно, такой команды не существует, или у Вас недостаточно прав'
-        )
+    send_message(
+        vk=vk,
+        chat_id=chat_id,
+        text='Не удалось выполнить. Возможно, такой команды не существует, или у Вас недостаточно прав'
+    )

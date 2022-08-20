@@ -5,6 +5,7 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from app.config import settings
 from create_db import engine
 from app.vk_tools.utils import dispatcher
+from app.vk_tools.filters.admin import is_admin
 
 session = Session(bind=engine)
 
@@ -18,12 +19,24 @@ def start():
 
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
 
-            user_id = event.user_id
+            chat_id = event.user_id
             text = event.text.lower()
 
-            dispatcher.call_command(
-                chat_id=user_id,
-                event=event,
-                text=text,
-                vk=vk
-            )
+            if is_admin(session=session, chat_id=chat_id):
+                dispatcher.call_admin_command(
+                    vk=vk,
+                    session=session,
+                    chat_id=chat_id,
+                    event=event,
+                    text=text
+                )
+
+            else:
+                dispatcher.call_guest_command(
+                    vk=vk,
+                    session=session,
+                    chat_id=chat_id,
+                    event=event,
+                    text=text
+                )
+
