@@ -8,13 +8,11 @@ from vk_api.bot_longpoll import VkBotEvent
 
 from app.vk_events import send_message
 from app.vk_tools import admin_add_info
-from app.create_db import engine, get_session, Guests, Orgs, Groups, Info, TechSupport, Sendings, Command
-
-
-# args = [quantity]
+from app.create_db import Guests, Orgs, Groups, Sendings, Command
 from app.vk_tools.utils.make_domain import make_domain
 
 
+# args = [quantity]
 def get_commands(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
@@ -160,7 +158,7 @@ def give_level(
         session: Session,
         event: Optional[VkBotEvent] = None,
         args: Optional[List[str]] = None
-) -> None:
+) -> int:
     """ The function of updating a group from the Guest table in DB.
 
         :param vk: session for connecting to VK API
