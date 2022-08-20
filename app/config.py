@@ -11,12 +11,18 @@ class Settings(BaseSettings):
     DIR_NAME: str = os.path.dirname(__file__)
 
     VK_TOKEN: Optional[str]
+    TECH_SUPPORT_VK_ID: Optional
 
-    GOOGLE_TABLE_ID: Optional[str]
+    DB_PATH: Optional[str]
+
+    GOOGLE_TABLE_ID_ORGS: Optional[str]
+    GOOGLE_TABLE_ID_SENDINGS: Optional[str]
+
+    GOOGLE_FOLDER_ID: Optional[str]
     GOOGLE_CREDS_PATH: Optional[str]
     GOOGLE_TOKEN_PATH: Optional[str]
 
-    DB_PATH: Optional[str]
+    DELAY: Optional[str]
 
     class Config:
         env_prefix = 'POSVYAT_VK_'

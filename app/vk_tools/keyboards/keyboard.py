@@ -1,3 +1,5 @@
+from vk_api.keyboard import VkKeyboard, VkKeyboardColor
+
 
 class Keyboard:
     """"
@@ -10,15 +12,15 @@ class Keyboard:
     :param inline: shows keyboard inside the message if true
     :type inline: bool
     """
-    def __init__(self, button: list, one_time=False, inline=False):
+    def __init__(self, buttons: list, one_time=False, inline=False):
         self.one_time = one_time
         self.inline = inline
-
-        self.keyboard = {
-            "one_time": self.one_time,
-            "inline": self.inline,
-            "buttons": button
-        }
-
+        self.buttons = buttons
+        self.keyboard = VkKeyboard(self.one_time, self.inline)
+    
+    def get(self):
+        for button in self.buttons:
+            self.keyboard.add_button(button)
+        return self.keyboard
     
 

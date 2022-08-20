@@ -5,7 +5,6 @@ from sqlalchemy.engine import Engine
 from sqlalchemy import create_engine
 from app.config import settings
 
-
 # Создание движка
 database = declarative_base()
 engine = create_engine(settings.DB_PATH, pool_size=1000)
@@ -31,6 +30,7 @@ class Guests(database):
     tag = Column(String)
     vk_link = Column(String, unique=True)
     groups = Column(String)
+    texts = Column(String)
 
 # Таблица с оргами
 class Orgs(database):
@@ -41,20 +41,21 @@ class Orgs(database):
     name = Column(String)
     patronymic = Column(String)
     vk_org_link = Column(String)
-    first_org_group = Column(Boolean)
-    second_org_group = Column(Boolean)
-
+    group = Column(String)
 
 # Таблица рассылок
 class Sendings(database):
     __tablename__ = 'sendings'
 
+    id = Column(String, primary_key=True)
     mail_name = Column(String, primary_key=True)
     send_time = Column(DateTime)
     group_num = Column(Integer, ForeignKey('groups', onupdate='cascade', ondelete='cascade'))
     text = Column(String)
-    media = Column(String)
-
+    pics = Column(String)
+    video = Column(String)
+    reposts = Column(String)
+    docs = Column(String)
 
 # Таблица с инфой о посвяте
 class Info(database):
@@ -72,6 +73,16 @@ class TechSupport(database):
     vk_link = Column(String, ForeignKey('guests.vk_link', onupdate='cascade', ondelete='cascade'))
     per_question = Column(String)
     status = Column(Boolean)
+
+
+# Таблица с командами
+class Command(database):
+    __tablename__ = 'command'
+
+    name = Column(String, primary_key=True)
+    arguments = Column(String)
+    desc = Column(String)
+    admin = Column(Boolean)
 
 
 # Создание таблиц

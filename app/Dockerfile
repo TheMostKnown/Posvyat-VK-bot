@@ -1,10 +1,10 @@
 FROM python:3
 
-WORKDIR /src/app
+WORKDIR /src
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+COPY app/requirements.txt .
+RUN pip install -r app/requirements.txt
 
 COPY . .
 
-CMD [ "python", "main.py"]
+CMD [ "python", "app/main.py"]
