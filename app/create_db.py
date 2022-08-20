@@ -49,6 +49,7 @@ class Orgs(database):
 class Sendings(database):
     __tablename__ = 'sendings'
 
+    id = Column(String, primary_key=True)
     mail_name = Column(String, primary_key=True)
     send_time = Column(DateTime)
     group_num = Column(Integer, ForeignKey('groups', onupdate='cascade', ondelete='cascade'))

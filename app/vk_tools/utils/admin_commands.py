@@ -1,334 +1,401 @@
+import json
+from typing import Optional, List
+
+import vk_api
+from sqlalchemy import desc
+from sqlalchemy.orm import Session
+from vk_api.bot_longpoll import VkBotEvent
+
 from app.vk_events import send_message
 from app.vk_tools import admin_add_info
-from app.create_db import engine, get_session, Guests, Orgs, Groups, Info, TechSupport, Sendings
+from app.create_db import engine, get_session, Guests, Orgs, Groups, Info, TechSupport, Sendings, Command
 
 
-def is_commands(user_id, event, text, vk_session, is_admin):
+# args = [quantity]
+from app.vk_tools.utils.make_domain import make_domain
 
-    if text == "/commands":
 
-        if is_admin(user_id, event):
+def get_commands(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        event: Optional[VkBotEvent] = None,
+        args: Optional[List[str]] = None
+) -> int:
+    """ The function of getting commands from the Command table in DB.
 
-            send_message(vk_session, user_id, "/get_mailings показать список рассылок")
-            send_message(vk_session, user_id,
-                         "/start_mailing name first_group third_group ninth_group ... и так далее через пробел, где name - имя рассылки, а first_group, second_group... группы пользователей, в которых должно стоять значение True.\nНапример, чтобы запустить рассылку с именем 'test' для тех, кто оплатил билет и подписался на бота в тг, нужно ввести команду\n'/start_mailing test first_group twelfth_group', а для тех, кто просто оплатил билет,\n'/start_mailing test first_group'")
-            send_message(vk_session, user_id,
-                         "/give_level id level True/False, где level - название группы (first_group, second_group..., но только одна группа на одну команду!), id -  айди пользователя")
-            send_message(vk_session, user_id,
-                         "/get_members first_group third_group ninth_group ..., и так далее через пробел, где first_group, second_group... группы пользователей, в которых должно стоять значение True.")
-            send_message(vk_session, user_id, "/get_orgs показать список всех организаторов")
-            send_message(vk_session, user_id, "/get_unread показать список непрочитанных сообщений ботом")
-            send_message(vk_session, user_id, "/get_members_all - список всех участников (нерекомендуемая команда)")
-            send_message(vk_session, user_id,
-                         "/start_mailing_all name, где name имя рассылки. Начинает всеобщую спам-атаку.")
-            send_message(vk_session, user_id,
-                         "/add_info (guestion?) answer - добавить пользователю новую кнопку в его информационную клавиатуру, где в скобках название кнопки, далее ответ на вопрос из кнопки")
+    :param vk: session for connecting to VK API
+    :param session: session to connect to the database
+    :param event: event object in VK
+    :param args: arguments of the command entered
 
+    :return: error number or 0
+    """
+    if event.message:
+        chat_id = event.message['from_id']
+    else:
+        chat_id = event.object['user_id']
+
+    params = dict()
+
+    commands = [{
+        'name': command.name,
+        'arguments': json.loads(command.arguments),
+        'info': command.desc
+    } for command in session.query(Command).filter_by(admin=True)]
+
+    if args:
+        if not args[0].isdigit():
+            return 9
+        params['quantity'] = int(args[0])
+
+    if params and 'quantity' in params.keys() and params['quantity'] < len(commands):
+        # commands = sorted(commands, key=lambda i: i['date'], reverse=True)[:params['quantity']]
+        commands = commands[:params['quantity']]
+    commands = sorted(commands, key=lambda command: command['name'])
+
+    message_texts = []
+    if not commands:
+        message_text = 'У вас нет доступных команд.'
+    else:
+        message_text = ''
+        for i, command in enumerate(commands):
+
+            if i and i % 50 == 0:
+                message_texts.append(message_text)
+                message_text = ''
+
+            message_text += f'\n{i + 1}) !{command["name"]}'
+
+            for arg in command['arguments']:
+                message_text += f' <{arg}>'
+
+            message_text += f'  ({command["info"]})'
+
+    message_texts.append(message_text)
+
+    for message_text in message_texts:
+        send_message(
+            vk=vk,
+            chat_id=chat_id,
+            text=message_text
+        )
+
+    session.commit()
+    return 0
+
+
+# args = [quantity]
+def get_mailings(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        event: Optional[VkBotEvent] = None,
+        args: Optional[List[str]] = None
+) -> int:
+    """ The function of getting texts from the Text table in DB.
+
+    :param vk: session for connecting to VK API
+    :param session: session to connect to the database
+    :param event: event object in VK
+    :param args: arguments of the command entered
+
+    :return: error number or 0
+    """
+    params = {}
+    if args:
+        if args[0].isdigit():
+            params['quantity'] = int(args[0])
         else:
+            return 9
 
-            send_message(vk_session, user_id, "No permission!")
+    texts = [{
+        'mail_name': text.title,
+        'send_time': text.send_time,
+        'group_num': text.group_num,
+        'text': text.text,
+        'pics': json.loads(text.pics),
+        'video': json.loads(text.video),
+        'reposts': json.loads(text.reposts),
+        'docs': json.loads(text.docs)
+    } for text in session.query(Sendings).all()]
 
+    if params and 'quantity' in params.keys() and params['quantity'] < len(texts):
+        texts = sorted(texts, key=lambda text: text['send_time'], reverse=True)[:params['quantity']]
+    texts = sorted(texts, key=lambda text: text['mail_name'])
 
-def is_get_mailings(user_id, event, text, vk_session, is_admin):
+    message_texts = []
+    if not texts:
+        message_text = 'Список текстов пуст.'
+    else:
+        message_text = ''
+        groups = {group.group_num: group.group_info for group in session.query(Groups)}
+        for i, text in enumerate(texts):
+            if i and i % 50 == 0:
+                message_texts.append[message_text]
+                message_text = ''
+            group = 'без уровня' if text["group_num"] not in groups.keys() \
+                else f'{groups[text["group_num"]]} - {text["group_num"]}'
+            message_text += f'{i + 1}) "{text["title"]}" ({group})\n'
 
-    if text == "/get_mailings":
+    message_texts.append(message_text)
 
-        if is_admin(user_id, event):
+    if event.message:
+        chat_id = event.message['from_id']
+    else:
+        chat_id = event.object['user_id']
 
-            send_message(vk_session, user_id, "Mailing list:")
-            session = get_session(engine)
+    for message_text in message_texts:
+        send_message(
+            vk=vk,
+            chat_id=chat_id,
+            text=message_text
+        )
 
-            #dff
-            q = session.query(Sendings)
-            for c in q:
-                session.delete(c)
-            m1 = Sendings(mail_name="1", text="dfejfejejefjefj")
-            m2 = Sendings(mail_name="2", text="dfejfejejefjefj")
-            m3 = Sendings(mail_name="3", text="dfejfejejefjefj")
-            m4 = Sendings(mail_name="4", text="dfejfejejefjefj")
-            m5 = Sendings(mail_name="5", text="dfejfejejefjefj")
-            session.add_all([m1, m2, m3, m4, m5])
-            session.commit()
-            #dff
-
-            q = session.query(Sendings)
-
-            for c in q:
-
-                stroka = str(c.mail_name) + " " + str(c.send_time) + " " + str(c.group_num) + " \n\n" + str(c.text) + "\n\n" + str(c.media)
-                send_message(vk_session, user_id, stroka)
-
-        else:
-
-            send_message(vk_session, user_id, "No permission!")
-
-
-def is_start_mailing_all(user_id, event, text, vk_session, is_admin):
-
-    if text[:19] == "/start_mailing_all ":
-
-        if is_admin(user_id, event):
-
-            message = text.split()
-            session = get_session(engine)
-            q = session.query(Sendings)
-            ind = 0
-
-            for c in q:
-
-                if c.mail_name.lower() == message[1]:
-
-                    qq = session.query(Guests)
-                    ind = 1
-
-                    for cc in qq:
-                        guest_id = cc.vk_link.split('/')[3][2:]
-                        send_message(vk_session, guest_id, c.text)
-
-                    send_message(vk_session, user_id, "Mailing done!")
-
-                    break
-
-            if ind == 0:
-                send_message(vk_session, user_id, "Mailing name not found!")
-
-        else:
-
-            send_message(vk_session, user_id, "No permission!")
+    session.commit()
+    return 0
 
 
-def is_start_mailing(user_id, event, text, vk_session, is_admin):
+# args = [{user.domain}, {step.number}]
+def give_level(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        event: Optional[VkBotEvent] = None,
+        args: Optional[List[str]] = None
+) -> None:
+    """ The function of updating a group from the Guest table in DB.
 
-    if text[:15] == "/start_mailing ":
+        :param vk: session for connecting to VK API
+        :param session: session to connect to the database
+        :param event: event object in VK
+        :param args: arguments of the command entered
 
-        if is_admin(user_id, event):
+        :return: error number or 0
+        """
+    if len(args) < 2 or not args[0] or not args[1]:
+        return 1
 
-            message = text.split()
-            session = get_session(engine)
-            groupps = ["/get_members", "first_group", "second_group", "third_group", "fourth_group", "fifth_group",
-                       "sixth_group", "seventh_group", "eighth_group", "ninth_group", "tenth_group", "eleventh_grup",
-                       "twelfth_group", "thirteenth_group"]
-            flag = 0
+    params = {'domain': make_domain(args[0])}
 
-            for i in range(2, len(message)):
-                if not (message[i] in groupps):
-                    flag = 1
+    user = session.query(Guests).filter_by(**params).first()
+    if not user:
+        return 5
 
-            if flag == 0:
+    if args[1].isdigit():
+        if int(args[1]) not in {group.group_num for group in session.query(Groups)}:
+            return 4
 
-                q = session.query(Sendings)
-                ind = 0
+        user_groups = json.loads(user.groups)
+        user_groups.append(int(args[1]))
 
-                for c in q:
+        user.groups = json.dumps(user_groups)
 
-                    if c.mail_name.lower() == message[1]:
+    session.commit()
+    return 0
 
-                        qq = session.query(Guests)
-                        ind = 1
 
-                        for cc in qq:
+# args = [quantity | Groups.group_num]
+def get_guests(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        event: Optional[VkBotEvent] = None,
+        args: Optional[List[str]] = None
+) -> int:
+    """ The function of getting users from the Guests table in DB.
 
-                            flag = 0
+    :param vk: session for connecting to VK API
+    :param session: session to connect to the database
+    :param event: event object in VK
+    :param args: arguments of the command entered
 
-                            for i in range(2, len(message)):
+    :return: error number or 0
+    """
 
-                                if str(getattr(cc, message[i], True)) != "True":
-                                    flag = 1
+    params = {}
+    if args:
+        if not args[0].isdigit():
+            return 9
+        params['quantity'] = int(args[0])
 
-                            if flag == 0:
-                                guest_id = cc.vk_link.split('/')[3][2:]
-                                send_message(vk_session, guest_id, c.text)
+    if event.message:
+        chat_id = event.message['from_id']
+    else:
+        chat_id = event.object['user_id']
 
-                        send_message(vk_session, user_id, "Mailing done!")
+    users = session.query(Guests).filter(Guests.id != chat_id)
+    if params and 'quantity' in params.keys() and params['quantity'] < users.count():
+        users = users.order_by(desc(Guests.surname)).limit(params['quantity'])
 
-                        break
+    message_texts = []
+    if not users.count():
+        message_text = f'Пользователей в базе нет.'
+    else:
+        message_text = f'Сейчас есть информация о {users.count()} пользователях:\n\n'
 
-                if ind == 0:
-                    send_message(vk_session, user_id, "Mailing name not found!")
+        groups = {group.group_num: group.group_info for group in session.query(Groups)}
+        titles = {text.id: text.mail_name for text in session.query(Sendings)}
+        for i, user in enumerate(users):
+            if i and i % 5 == 0:
+                message_texts.append(message_text)
+                message_text = ''
 
+            user_groups = ''
+            for group in json.loads(user.groups):
+                if group in groups.keys():
+                    user_groups += f'{groups[group]} - {group}'
+            if len(user_groups) == 0:
+                user_groups = 'Без уровней'
+
+            message_text += f'{i + 1}) {user.name} {user.surname} - vk.com/{user.vk_link}\n- Уровни - {user_groups}\n'
+            texts = json.loads(user.texts)
+            if not texts:
+                message_text += '- Нет полученных текстов.\n\n'
             else:
-
-                send_message(vk_session, user_id, "Invalid command!")
-
-        else:
-
-            send_message(vk_session, user_id, "No permission!")
-
-
-def is_give_level(user_id, event, text, vk_session, is_admin):
-
-    if text[:12] == "/give_level ":
-
-        if is_admin(user_id, event):
-
-            message = text.split()
-            session = get_session(engine)
-
-            try:
-
-                q = session.query(Guests).get(int(message[1]))
-                groupps = ["first_group", "second_group", "third_group", "fourth_group", "fifth_group", "sixth_group",
-                           "seventh_group", "eighth_group", "ninth_group", "tenth_group", "eleventh_grup",
-                           "twelfth_group", "thirteenth_group"]
-
-                if message[2] in groupps:
-
-                    setattr(q, message[2], eval(message[3].capitalize()))
-                    session.add(q)
-                    session.commit()
-                    send_message(vk_session, user_id, "Done!")
-
-                else:
-
-                    send_message(vk_session, user_id, "Invalid command!")
-
-            except BaseException:
-
-                send_message(vk_session, user_id, "Invalid command!")
-
-        else:
-
-            send_message(vk_session, user_id, "No permission!")
-
-
-def is_get_members_all(user_id, event, text, vk_session, is_admin):
-
-    if text == "/get_members_all":
-
-        if is_admin(user_id, event):
-
-            session = get_session(engine)
-            q = session.query(Guests)
-
-            for c in q:
-                stroka = str(c.id) + " " + str(c.name) + " " + str(c.surname) + "\n" + str(
-                    c.vk_link) + "\n\n" + "Написал боту:" + str(c.first_group) + "\n\n" + "Вступил в группу:" + str(
-                    c.second_group) + "\n\n" + "Зарегистрировался:" + str(c.third_group) + "\n\n" + "Оплатил:" + str(
-                    c.fourth_group) + "\n\n" + "Отметил в форме трансфера - Парк победы:" + str(
-                    c.fifth_group) + "\n\n" + "Отметил в форме трансфера - Одинцово:" + str(
-                    c.sixth_group) + "\n\n" + "Отметил в форме трансфера - самостоятельно:" + str(
-                    c.seventh_group) + "\n\n" + "Прошел форму на расселение:" + str(
-                    c.eighth_group) + "\n\n" + "Согласовал ли трансфер:" + str(
-                    c.ninth_group) + "\n\n" + "Согласовал ли расселение:" + str(
-                    c.tenth_group) + "\n\n" + "Заказал мерч:" + str(
-                    c.eleventh_grup) + "\n\n" + "Подписался на бота в ТГ:" + str(
-                    c.twelfth_group) + "\n\n" + "Вернул ли билет:" + str(c.thirteenth_group)
-                send_message(vk_session, user_id, stroka)
-
-        else:
-
-            send_message(vk_session, user_id, "No permission!")
-
-
-def is_get_members(user_id, event, text, vk_session, is_admin):
-
-    if text[:13] == "/get_members ":
-
-        if is_admin(user_id, event):
-
-            session = get_session(engine)
-            message = text.split()
-            groupps = ["/get_members", "first_group", "second_group", "third_group", "fourth_group", "fifth_group",
-                       "sixth_group", "seventh_group", "eighth_group", "ninth_group", "tenth_group", "eleventh_grup",
-                       "twelfth_group", "thirteenth_group"]
-            flag = 0
-
-            for i in message:
-                if not (i in groupps):
-                    flag = 1
-
-            if flag == 0:
-
-                q = session.query(Guests)
-                ind = 0
-
-                for c in q:
-
-                    flag = 0
-
-                    for i in message:
-
-                        if str(getattr(c, i, True)) != "True":
-                            flag = 1
-
-                    if flag == 0:
-                        ind = 1
-                        stroka = str(c.id) + " " + str(c.name) + " " + str(c.surname) + "\n" + str(
-                            c.vk_link) + "\n\n" + "Написал боту:" + str(
-                            c.first_group) + "\n\n" + "Вступил в группу:" + str(
-                            c.second_group) + "\n\n" + "Зарегистрировался:" + str(
-                            c.third_group) + "\n\n" + "Оплатил:" + str(
-                            c.fourth_group) + "\n\n" + "Отметил в форме трансфера - Парк победы:" + str(
-                            c.fifth_group) + "\n\n" + "Отметил в форме трансфера - Одинцово:" + str(
-                            c.sixth_group) + "\n\n" + "Отметил в форме трансфера - самостоятельно:" + str(
-                            c.seventh_group) + "\n\n" + "Прошел форму на расселение:" + str(
-                            c.eighth_group) + "\n\n" + "Согласовал ли трансфер:" + str(
-                            c.ninth_group) + "\n\n" + "Согласовал ли расселение:" + str(
-                            c.tenth_group) + "\n\n" + "Заказал мерч:" + str(
-                            c.eleventh_grup) + "\n\n" + "Подписался на бота в ТГ:" + str(
-                            c.twelfth_group) + "\n\n" + "Вернул ли билет:" + str(c.thirteenth_group)
-                        send_message(vk_session, user_id, stroka)
-
-                if ind == 0:
-                    send_message(vk_session, user_id, "No results!")
-
-            else:
-
-                send_message(vk_session, user_id, "Invalid command!")
-
-        else:
-
-            send_message(vk_session, user_id, "No permission!")
-
-
-def is_get_orgs(user_id, event, text, vk_session, is_admin):
-
-    if text == "/get_orgs":
-
-        if is_admin(user_id, event):
-
-            send_message(vk_session, user_id, "Orgs list:")
-            session = get_session(engine)
-            q = session.query(Orgs)
-
-            for c in q:
-                stroka = str(c.id) + " " + str(c.name) + " " + str(c.surname) + " \n" + str(c.vk_org_link)
-                send_message(vk_session, user_id, stroka)
-
-        else:
-
-            send_message(vk_session, user_id, "No permission!")
-
-
-def is_get_unread(user_id, event, text, vk_session, is_admin):
-
-    if text == "/get_unread":
-
-        if is_admin(user_id, event):
-
-            conversation_inf = vk_session.method("messages.getConversations", {"filter": "unread"})
-            send_message(vk_session, user_id, "Unread messages:")
-
-            for i in conversation_inf["items"]:
-                if i["last_message"]["from_id"] != user_id:
-                    stroka = "https://vk.com/id" + str(i["last_message"]["from_id"]) + "\n" + str(
-                        i["last_message"]["text"])
-                    send_message(vk_session, user_id, stroka)
-
-        else:
-
-            send_message(vk_session, user_id, "No permission!")
-
-
-def is_info(user_id, event, text, vk_session, session, is_admin):
-
-    if text.startswith("/add_info"):
-
-        if is_admin(user_id, event):
-
-            if (admin_add_info(session, text)):
-                send_message(vk_session, user_id, "Вопрос добавлен")
-            else:
-                send_message(vk_session, user_id, "Не удалось добавить вопрос")
-        else:
-            send_message(vk_session, user_id, "No permission!")
+                message_text += '- Полученные тексты - '
+                for j, text in enumerate(texts):
+                    if text not in titles.keys():
+                        texts.pop(j)
+                message_text += '; '.join(sorted({f'"{titles[text]}"' for text in texts})) + '\n\n'
+
+    message_texts.append(message_text)
+    for message_text in message_texts:
+        send_message(
+            vk=vk,
+            chat_id=chat_id,
+            text=message_text
+        )
+
+    session.commit()
+    return 0
+
+
+# args = [quantity | Groups.group_num]
+def get_orgs(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        event: Optional[VkBotEvent] = None,
+        args: Optional[List[str]] = None
+) -> int:
+    """ The function of getting users from the Orgs table in DB.
+
+    :param vk: session for connecting to VK API
+    :param session: session to connect to the database
+    :param event: event object in VK
+    :param args: arguments of the command entered
+
+    :return: error number or 0
+    """
+
+    params = {}
+    if args:
+        if not args[0].isdigit():
+            return 9
+        params['quantity'] = int(args[0])
+
+    if event.message:
+        chat_id = event.message['from_id']
+    else:
+        chat_id = event.object['user_id']
+
+    users = session.query(Orgs).filter(Orgs.id != chat_id)
+    if params and 'quantity' in params.keys() and params['quantity'] < users.count():
+        users = users.order_by(desc(Orgs.surname)).limit(params['quantity'])
+
+    message_texts = []
+    if not users.count():
+        message_text = f'Пользователей в базе нет.'
+    else:
+        message_text = f'Сейчас есть информация о {users.count()} пользователях:\n\n'
+
+        groups = {group.group_num: group.group_info for group in session.query(Groups)}
+
+        for i, user in enumerate(users):
+            if i and i % 5 == 0:
+                message_texts.append(message_text)
+                message_text = ''
+
+            user_groups = ''
+            for group in json.loads(user.groups):
+                if group in groups.keys():
+                    user_groups += f'{groups[group]} - {group}'
+            if len(user_groups) == 0:
+                user_groups = 'Без уровней'
+
+            message_text += f'{i + 1}) {user.name} {user.surname} - vk.com/{user.vk_link}\n- Уровни - {user_groups}\n'
+
+    message_texts.append(message_text)
+    for message_text in message_texts:
+        send_message(
+            vk=vk,
+            chat_id=chat_id,
+            text=message_text
+        )
+
+    session.commit()
+    return 0
+
+
+# args = [quantity]
+def get_groups(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        event: Optional[VkBotEvent] = None,
+        args: Optional[List[str]] = None
+) -> int:
+    """ The function of getting steps from the Groups table in DB.
+
+    :param vk: session for connecting to VK API
+    :param session: session to connect to the database
+    :param event: event object in VK
+    :param args: arguments of the command entered
+
+    :return: error number or 0
+    """
+    params = {}
+    if args:
+        if not args[0].isdigit():
+            return 9
+        params['quantity'] = int(args[0])
+
+    groups = [{
+        'group_num': group.group_num,
+        'group_info': group.group_info,
+    } for group in session.query(Groups).all()]
+
+    if params and 'quantity' in params.keys() and params['quantity'] < len(groups):
+        groups = sorted(groups, key=lambda group: group['group_num'], reverse=True)[:params['quantity']]
+    groups = sorted(groups, key=lambda group: group['group_num'])
+
+    message_texts = []
+    if not groups:
+        message_text = 'Список шагов пуст.'
+    else:
+        message_text = ''
+        for i, group in enumerate(groups):
+            if i and i % 50 == 0:
+                message_texts.append(message_text)
+                message_text = ''
+            message_text += f'{group["group_num"]}) {group["group_info"]}\n'
+
+    message_texts.append(message_text)
+
+    if event.message:
+        chat_id = event.message['from_id']
+    else:
+        chat_id = event.object['user_id']
+
+    for message_text in message_texts:
+        send_message(
+            vk=vk,
+            chat_id=chat_id,
+            text=message_text
+        )
+
+    session.commit()
+    return 0
+
+
+def info(user_id, event, text, vk_session, session, is_admin):
+
+    if admin_add_info(session, text):
+        send_message(vk_session, user_id, "Вопрос добавлен")
+    else:
+        send_message(vk_session, user_id, "Не удалось добавить вопрос")
