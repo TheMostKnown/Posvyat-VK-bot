@@ -391,9 +391,15 @@ def get_groups(
     return 0
 
 
-def info(user_id, event, text, vk_session, session, is_admin):
+def info(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        chat_id: int,
+        event: VkBotEvent,
+        text: str
+) -> None:
 
     if admin_add_info(session, text):
-        send_message(vk_session, user_id, "Вопрос добавлен")
+        send_message(vk, chat_id, "Вопрос добавлен")
     else:
-        send_message(vk_session, user_id, "Не удалось добавить вопрос")
+        send_message(vk, chat_id, "Не удалось добавить вопрос")
