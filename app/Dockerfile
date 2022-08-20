@@ -7,5 +7,4 @@ RUN pip install -r app/requirements.txt
 
 COPY . .
 
-WORKDIR /src/app
-CMD [ "python", "main.py"]
+CMD [ "python", "app/main.py"]
