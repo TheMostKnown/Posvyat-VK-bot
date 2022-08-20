@@ -1,14 +1,13 @@
+from sqlalchemy.orm import Session
 
-def is_admin(id_p, event_p):
+from app.create_db import Orgs
 
-    group_id = vk_session.method("groups.getById", {"peer_id": event_p.peer_id})
-    group_inf = vk_session.method("groups.getMembers", {"group_id": group_id[0]["id"], "filter": "managers"})
 
-    for member in group_inf["items"]:
-
-        if member["id"] == id_p:
-
-            if member["role"] == "administrator" or "creator":
-                return True
-            else:
-                return False
+def is_admin(
+        session: Session,
+        chat_id: int
+):
+    if session.query(Orgs).filter_by(id=chat_id).first():
+        return True
+    else:
+        return False
