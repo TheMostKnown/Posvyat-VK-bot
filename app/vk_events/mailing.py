@@ -3,8 +3,8 @@ from typing import List, Optional
 import json
 from sqlalchemy.orm import Session
 
-from app.create_db import Sendings, Guests, Orgs, Groups
-from send_message import send_message
+from app.create_db import Sendings, Guests, Groups
+from . import send_message
 
 
 # args = [Sendings.mail_name, None | Groups.group_num | Groups.group_info]

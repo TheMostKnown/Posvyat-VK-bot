@@ -2,10 +2,10 @@ import vk_api
 from sqlalchemy.orm import Session
 from vk_api.longpoll import VkLongPoll, VkEventType
 
-from app.config import settings
+from config import settings
 from create_db import engine
-from app.vk_tools.utils import dispatcher
-from app.vk_tools.filters.admin import is_admin
+from vk_tools.utils import dispatcher
+from vk_tools.filters.admin import is_admin
 
 session = Session(bind=engine)
 
@@ -15,28 +15,30 @@ vk = vk_session.get_api()
 
 def start():
 
-    for event in VkLongPoll(vk_session).listen():
+    while True:
 
-        if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+        for event in VkLongPoll(vk_session).listen():
 
-            chat_id = event.user_id
-            text = event.text.lower()
+            if event.type == VkEventType.MESSAGE_NEW and event.to_me:
 
-            if is_admin(session=session, chat_id=chat_id):
-                dispatcher.call_admin_command(
-                    vk=vk,
-                    session=session,
-                    chat_id=chat_id,
-                    event=event,
-                    text=text
-                )
+                chat_id = event.user_id
+                text = event.text.lower()
 
-            else:
-                dispatcher.call_guest_command(
-                    vk=vk,
-                    session=session,
-                    chat_id=chat_id,
-                    event=event,
-                    text=text
-                )
+                if is_admin(session=session, chat_id=chat_id):
+                    dispatcher.call_admin_command(
+                        vk=vk,
+                        session=session,
+                        chat_id=chat_id,
+                        event=event,
+                        text=text
+                    )
+
+                else:
+                    dispatcher.call_guest_command(
+                        vk=vk,
+                        session=session,
+                        chat_id=chat_id,
+                        event=event,
+                        text=text
+                    )
 
