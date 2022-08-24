@@ -7,5 +7,5 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD [ "python", "-m", "./app.create_db.py"]
-CMD [ "python", "-m", "./app.main.py"]
+CMD [ "python", "-m", "app.create_db"]
+CMD [ "python", "-m", "app.main"]

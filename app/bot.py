@@ -2,10 +2,10 @@ import vk_api
 from sqlalchemy.orm import Session
 from vk_api.longpoll import VkLongPoll, VkEventType
 
-from config import settings
-from create_db import engine
-from vk_tools.utils import dispatcher
-from vk_tools.filters.admin import is_admin
+from app.config import settings
+from app.create_db import engine
+from app.vk_tools.utils import dispatcher
+from app.vk_tools.filters.admin import is_admin
 
 session = Session(bind=engine)
 
