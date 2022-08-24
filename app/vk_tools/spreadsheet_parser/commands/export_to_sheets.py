@@ -7,7 +7,7 @@ from datetime import datetime
 
 from app.create_db import Sendings, Guests, Orgs, Groups
 from app.vk_tools.spreadsheet_parser.spreadsheet_parser import Spreadsheet
-import update_sheet
+from app.vk_tools.spreadsheet_parser.commands import update_sheet
 from app.vk_events.send_message import send_message
 
 

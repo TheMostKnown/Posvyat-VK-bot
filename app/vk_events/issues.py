@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 import vk_api
 
 from app.create_db import TechSupport
-from . import send_message
+from app.vk_events.send_message import send_message
 from app.config import settings
 
 

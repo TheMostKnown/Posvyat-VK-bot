@@ -2,7 +2,7 @@ import vk_api
 from sqlalchemy.orm import Session
 from vk_api.bot_longpoll import VkBotEvent
 
-from . import admin_commands
+from app.vk_tools.utils import admin_commands
 from app.vk_events import send_message
 from app.vk_events.mailing import messages as start_mailing
 from app.vk_events.issues import open_issues
