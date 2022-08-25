@@ -51,10 +51,10 @@ class Orgs(database):
 class Sendings(database):
     __tablename__ = 'sendings'
 
-    id = Column(String, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     mail_name = Column(String, unique=True)
     text = Column(String)
-    groups = Column(String, ForeignKey('groups', onupdate='cascade', ondelete='cascade'))
+    groups = Column(String)
     send_time = Column(DateTime, nullable=True)
     pics = Column(String, nullable=True)
     video = Column(String, nullable=True)
