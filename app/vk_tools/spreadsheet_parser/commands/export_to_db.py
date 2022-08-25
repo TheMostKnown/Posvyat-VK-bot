@@ -27,6 +27,7 @@ def get_groups(
 
         if group_info not in existing_groups:
             group_num = groups_sheet[i][0]
+            print(group_num)
 
             session.add(
                 Groups(
@@ -56,6 +57,7 @@ def get_commands(
 
     for i in range(1, len(commands_sheet)):
         name = commands_sheet[i][0]
+        print(name)
 
         if name not in existing_commands:
             arguments = commands_sheet[i][1]
@@ -92,6 +94,7 @@ def get_sendings(
 
     for i in range(1, len(sendings_sheet)):
         name = sendings_sheet[i][0]
+        print(name)
 
         if name not in existing_sengings:
 
@@ -148,6 +151,7 @@ def get_organizers(
 
     for i in range(1, len(organizers_sheet)):
         chat_id = organizers_sheet[i][0]
+        print(chat_id)
 
         if chat_id not in existing_organizers:
             surname = organizers_sheet[i][1]
@@ -188,6 +192,7 @@ def get_guests(
 
     for i in range(1, len(guests_sheet)):
         chat_id = guests_sheet[i][0]
+        print(chat_id)
 
         if chat_id not in existing_guests:
             surname = guests_sheet[i][1]
