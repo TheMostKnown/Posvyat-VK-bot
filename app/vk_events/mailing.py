@@ -24,23 +24,27 @@ def messages(
     if not args or not args[0]:
         return 1
 
-    params = {'mail_name': args[0]}
-
-    text = session.query(Sendings).filter_by(**params).first()
+    text = session.query(Sendings).filter_by(mail_name=args[0]).first()
     if not text:
         return 2
     if not text.text:
         return 10
 
-    for user in session.query(Guests).filter_by(**params):
-        groups = json.loads(user.groups)
+    text_groups = json.loads(text.groups)
+    for user in session.query(Guests).all():
+        user_groups = json.loads(user.groups)
+        intersection = []
 
-        if list(set(text.groups) & set(groups)) == text.groups:
+        for elem in user_groups:
+            if elem in text_groups:
+                intersection.append(elem)
+
+        if intersection == text_groups:
             send_message(
                 vk=vk,
                 chat_id=user.id,
                 text=text.text,
-                attachments=[] if not text.attachments else json.loads(text.attachments)
+                attachments=[]
             )
 
     session.commit()

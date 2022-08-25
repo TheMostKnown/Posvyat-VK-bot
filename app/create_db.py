@@ -78,7 +78,7 @@ class TechSupport(database):
     id = Column(Integer, primary_key=True, autoincrement=True)
     vk_link = Column(String, ForeignKey('guests.vk_link', onupdate='cascade', ondelete='cascade'))
     per_question = Column(String)
-    status = Column(Boolean)
+    status = Column(String)
 
 
 # Таблица с командами

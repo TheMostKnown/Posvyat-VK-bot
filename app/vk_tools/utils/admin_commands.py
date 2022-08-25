@@ -98,14 +98,9 @@ def get_mailings(
             return 9
 
     texts = [{
-        'mail_name': text.title,
-        'send_time': text.send_time,
-        'group_num': text.group_num,
+        'mail_name': text.mail_name,
         'text': text.text,
-        'pics': json.loads(text.pics),
-        'video': json.loads(text.video),
-        'reposts': json.loads(text.reposts),
-        'docs': json.loads(text.docs)
+        'groups': text.groups
     } for text in session.query(Sendings).all()]
 
     if params and 'quantity' in params.keys() and params['quantity'] < len(texts):
@@ -117,14 +112,14 @@ def get_mailings(
         message_text = 'Список текстов пуст.'
     else:
         message_text = ''
-        groups = {group.group_num: group.group_info for group in session.query(Groups)}
+
         for i, text in enumerate(texts):
+
             if i and i % 50 == 0:
                 message_texts.append[message_text]
                 message_text = ''
-            group = 'без уровня' if text["group_num"] not in groups.keys() \
-                else f'{groups[text["group_num"]]} - {text["group_num"]}'
-            message_text += f'{i + 1}) "{text["title"]}" ({group})\n'
+
+            message_text += f'{i + 1}) "{text["mail_name"]}" уровни: {text["groups"]}\n'
 
     message_texts.append(message_text)
 
@@ -143,9 +138,7 @@ def get_mailings(
 
 # args = [{Guests.vk_link}, {Groups.number}]
 def give_level(
-        vk: vk_api.vk_api.VkApiMethod,
         session: Session,
-        event: Optional[VkBotEvent] = None,
         args: Optional[List[str]] = None
 ) -> int:
     """ The function of updating a group from the Guest table in DB.
@@ -160,9 +153,7 @@ def give_level(
     if len(args) < 2 or not args[0] or not args[1]:
         return 1
 
-    params = {'domain': make_domain(args[0])}
-
-    user = session.query(Guests).filter_by(**params).first()
+    user = session.query(Guests).filter_by(vk_link=args[0]).first()
     if not user:
         return 5
 
@@ -204,7 +195,7 @@ def get_guests(
 
     chat_id = event.raw[3]
 
-    users = session.query(Guests).filter(Guests.id != chat_id)
+    users = session.query(Guests).filter(Guests.chat_id != chat_id)
     if params and 'quantity' in params.keys() and params['quantity'] < users.count():
         users = users.order_by(desc(Guests.surname)).limit(params['quantity'])
 
@@ -214,30 +205,25 @@ def get_guests(
     else:
         message_text = f'Сейчас есть информация о {users.count()} пользователях:\n\n'
 
-        groups = {group.group_num: group.group_info for group in session.query(Groups)}
         titles = {text.id: text.mail_name for text in session.query(Sendings)}
+
         for i, user in enumerate(users):
             if i and i % 5 == 0:
                 message_texts.append(message_text)
                 message_text = ''
 
-            user_groups = ''
-            for group in json.loads(user.groups):
-                if group in groups.keys():
-                    user_groups += f'{groups[group]} - {group}'
-            if len(user_groups) == 0:
-                user_groups = 'Без уровней'
+            user_groups = user.groups if len(user.groups) != 0 else 'Без уровней'
 
-            message_text += f'{i + 1}) {user.name} {user.surname} - vk.com/{user.vk_link}\n- Уровни - {user_groups}\n'
-            texts = json.loads(user.texts)
-            if not texts:
-                message_text += '- Нет полученных текстов.\n\n'
+            message_text += f'{i + 1}) {user.name} {user.surname} - vk.com/{user.vk_link}\n- Уровни: {user_groups}\n'
+
+            if not user.texts or user.texts == '[None]':
+                message_text += '- Нет полученных рассылок.\n\n'
             else:
-                message_text += '- Полученные тексты - '
+                texts = json.loads(user.texts)
+                message_text += '- Полученные рассылки - '
                 for j, text in enumerate(texts):
-                    if text not in titles.keys():
-                        texts.pop(j)
-                message_text += '; '.join(sorted({f'"{titles[text]}"' for text in texts})) + '\n\n'
+                    if text in titles.keys():
+                        message_text += '; '.join(sorted({f'"{titles[text]}"' for text in texts})) + '\n\n'
 
     message_texts.append(message_text)
     for message_text in message_texts:
@@ -276,7 +262,7 @@ def get_orgs(
 
     chat_id = event.raw[3]
 
-    users = session.query(Orgs).filter(Orgs.id != chat_id)
+    users = session.query(Orgs)
     if params and 'quantity' in params.keys() and params['quantity'] < users.count():
         users = users.order_by(desc(Orgs.surname)).limit(params['quantity'])
 
@@ -293,12 +279,7 @@ def get_orgs(
                 message_texts.append(message_text)
                 message_text = ''
 
-            user_groups = ''
-            for group in json.loads(user.groups):
-                if group in groups.keys():
-                    user_groups += f'{groups[group]} - {group}'
-            if len(user_groups) == 0:
-                user_groups = 'Без уровней'
+            user_groups = user.groups if len(user.groups) != 0 else 'Без уровней'
 
             message_text += f'{i + 1}) {user.name} {user.surname} - vk.com/{user.vk_link}\n- Уровни - {user_groups}\n'
 

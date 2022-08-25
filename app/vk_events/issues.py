@@ -18,14 +18,20 @@ def open_issues(
         :return: error number or 0
         """
 
-    for issue in session.query(TechSupport).filter_by(status='open'):
-        text = f'У пользователя vk.com/{issue.vk_link} произошла проблема:\n' \
-               f'{issue.per_question}'
+    issues = session.query(TechSupport).filter_by(status='open').all()
 
-        send_message(
-            vk=vk,
-            chat_id=settings.TECH_SUPPORT_VK_ID,
-            text=text
-        )
+    text = ''
+    if issues:
+        for issue in issues:
+            text += f'У пользователя vk.com/{issue.vk_link} произошла проблема:\n' \
+                   f'{issue.per_question}\n'
+    else:
+        text = 'Сейчас нет открытых баг-репортов. Можешь почиллить!'
+
+    send_message(
+        vk=vk,
+        chat_id=settings.TECH_SUPPORT_VK_ID,
+        text=text
+    )
 
     return 0

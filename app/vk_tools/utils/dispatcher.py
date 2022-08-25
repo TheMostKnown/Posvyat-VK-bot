@@ -60,17 +60,15 @@ def call_admin_command(
 
     elif command == '/give_level':
         admin_commands.give_level(
-            vk=vk,
             session=session,
-            event=event,
             args=text_split[1:3] if len(text_split) > 2 else None
         )
 
-    elif command == '/start mailing':
+    elif command == '/start_mailing':
         start_mailing(
             vk=vk,
             session=session,
-            args=text_split[1:3] if len(text_split) > 2 else None
+            args=text_split[1] if len(text_split) > 1 else None
         )
 
     elif command == '/get_open_issues':
