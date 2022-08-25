@@ -23,7 +23,7 @@ class Groups(database):
 class Guests(database):
     __tablename__ = 'guests'
 
-    id = Column(Integer, primary_key=True)
+    chat_id = Column(Integer, primary_key=True)
     surname = Column(String)
     name = Column(String)
     patronymic = Column(String)
@@ -38,12 +38,12 @@ class Guests(database):
 class Orgs(database):
     __tablename__ = 'orgs'
 
-    id = Column(Integer, primary_key=True)
+    chat_id = Column(Integer, primary_key=True)
     surname = Column(String)
     name = Column(String)
     patronymic = Column(String)
-    vk_org_link = Column(String)
-    group = Column(String)
+    vk_link = Column(String)
+    groups = Column(String)
 
 
 # Таблица рассылок

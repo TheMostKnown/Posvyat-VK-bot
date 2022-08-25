@@ -112,23 +112,27 @@ def get_organizers(
         token_file_name
     )[sheet_name]
 
-    for row in organizers_sheet:
-        chat_id = row[0]
-        name = row[1]
-        surname = row[2]
-        patronymic = row[3]
-        vk_link = row[4]
-        group = row[5]
+    existing_organizers = [organizer.chat_id for organizer in session.query(Orgs).all()]
 
-        session.add(
-            Orgs(
-                id=chat_id,
-                name=name,
-                surname=surname,
-                patronymic=patronymic,
-                vk_org_link=vk_link,
-                group=group
+    for i in range(1, len(organizers_sheet)):
+        chat_id = organizers_sheet[i][0]
+
+        if chat_id not in existing_organizers:
+            surname = organizers_sheet[i][1]
+            name = organizers_sheet[i][2]
+            patronymic = organizers_sheet[i][3]
+            vk_link = organizers_sheet[i][4]
+            groups = organizers_sheet[i][5]
+
+            session.add(
+                Orgs(
+                    chat_id=chat_id,
+                    name=name,
+                    surname=surname,
+                    patronymic=patronymic,
+                    vk_link=vk_link,
+                    groups=f'[{groups}]'
+                )
             )
-        )
 
     session.commit()
