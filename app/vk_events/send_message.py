@@ -36,35 +36,32 @@ def send_message(
     :rtype: None
     """
 
-    message_id = 0
+    # yep, this is ugly but idk what to do
+    error_codes_list = [
+        104, 900, 901, 902, 911, 912, 913, 914, 917,
+        921, 922, 925, 936, 940, 943, 944, 945, 946, 950, 962, 969
+    ]
 
-    # Попытка отправить сообщение
-    try:
-        message_id = vk.messages.send(
-            user_id=chat_id,
-            message=text,
-            attachment=attachments,
-            random_id=get_random_id(),
-            keyboard=None if not keyboard else keyboard.get_keyboard()
-        )
-        print(message_id)
+    message_id = vk.messages.send(
+        user_id=chat_id,
+        message=text,
+        attachment=attachments,
+        random_id=get_random_id(),
+        keyboard=None if not keyboard else keyboard.get_keyboard()
+    )
 
-        # Задержка от спама
-        time.sleep(settings.DELAY)
+    time.sleep(settings.DELAY)
 
-    # Оповещение о недошедшем сообщении
-    except Exception as e:
+    if message_id in error_codes_list:
 
         session = get_session(engine)
         user = session.query(Guests).filter_by(chat_id=chat_id).first()
         organizer = session.query(Orgs).filter_by(chat_id=chat_id).first()
 
         if user:
-            domain = session.query(Guests).filter_by(chat_id=chat_id).first().vk_link
-
-            error_text = f'Пользователю vk.com/{domain} ({chat_id})' \
+            error_text = f'Пользователю vk.com/{user.vk_link} ({chat_id})' \
                          f'не отправилось сообщение "{text}"\n' \
-                         f'По причине: "{e}"'
+                         f'По причине: "{message_id}"'
             vk.messages.send(
                 user_id=settings.TECH_SUPPORT_VK_ID,
                 message=error_text,
@@ -72,9 +69,7 @@ def send_message(
             )
 
         elif organizer:
-            domain = session.query(Orgs).filter_by(chat_id=chat_id).first().vk_link
-
-            error_text = f'Пользователю vk.com/{domain} ({chat_id})' \
+            error_text = f'Пользователю vk.com/{organizer.vk_link} ({chat_id})' \
                          f'не отправилось сообщение "{text}"\n' \
                          f'По причине: "{e}"'
             vk.messages.send(

@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     GOOGLE_CREDS_PATH: Optional[str]
     GOOGLE_TOKEN_PATH: Optional[str]
 
-    DELAY: Optional[str]
+    DELAY: Optional[int]
 
     class Config:
         env_prefix = 'POSVYAT_VK_'
@@ -34,7 +34,8 @@ class Settings(BaseSettings):
             'GOOGLE_TABLE_ID': {'env': 'GOOGLE_TABLE_ID'},
             'GOOGLE_FOLDER_ID': {'env': 'GOOGLE_FOLDER_ID'},
             'GOOGLE_CREDS_PATH': {'env': 'GOOGLE_CREDS_PATH'},
-            'GOOGLE_TOKEN_PATH': {'env': 'GOOGLE_TOKEN_PATH'}
+            'GOOGLE_TOKEN_PATH': {'env': 'GOOGLE_TOKEN_PATH'},
+            'DELAY': {'env': 'DELAY'}
         }
 
 

@@ -41,7 +41,6 @@ def get_init_data(
 
     for i in range(1, len(commands_sheet)):
         name = commands_sheet[i][0]
-        print(name)
 
         if name not in existing_commands:
             arguments = commands_sheet[i][1]
@@ -62,7 +61,6 @@ def get_init_data(
 
     for i in range(1, len(sendings_sheet)):
         name = sendings_sheet[i][0]
-        print(name)
 
         if name not in existing_sengings:
 
@@ -102,8 +100,7 @@ def get_init_data(
     existing_organizers = [organizer.chat_id for organizer in session.query(Orgs).all()]
 
     for i in range(1, len(organizers_sheet)):
-        chat_id = organizers_sheet[i][0]
-        print(chat_id)
+        chat_id = int(organizers_sheet[i][0])
 
         if chat_id not in existing_organizers:
             surname = organizers_sheet[i][1]
@@ -127,8 +124,7 @@ def get_init_data(
     existing_guests = [guest.chat_id for guest in session.query(Guests).all()]
 
     for i in range(1, len(guests_sheet)):
-        chat_id = guests_sheet[i][0]
-        print(chat_id)
+        chat_id = int(guests_sheet[i][0])
 
         if chat_id not in existing_guests:
             surname = guests_sheet[i][1]
