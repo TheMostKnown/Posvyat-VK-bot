@@ -3,15 +3,51 @@ import json
 from sqlalchemy.orm import Session
 
 from app.vk_tools.spreadsheet_parser.spreadsheet_parser import get_data
-from app.create_db import Sendings, Orgs, Groups
+from app.create_db import Sendings, Orgs, Groups, Command
+
+
+def get_commands(
+    session: Session,
+    spreadsheet_id: str,
+    creds_file_name: str,
+    token_file_name: str,
+    sheet_name: str
+) -> None:
+
+    commands_sheet = get_data(
+        spreadsheet_id,
+        creds_file_name,
+        token_file_name
+    )[sheet_name]
+
+    existing_commands = [command.name for command in session.query(Command).all()]
+
+    for i in range(1, len(commands_sheet)):
+        name = commands_sheet[i][0]
+
+        if name not in existing_commands:
+            arguments = commands_sheet[i][1]
+            desc = commands_sheet[i][2]
+            admin = True if commands_sheet[i][3] == 'True' else False
+
+            session.add(
+                Command(
+                    name=name,
+                    arguments=arguments,
+                    desc=desc,
+                    admin=admin
+                )
+            )
+
+    session.commit()
 
 
 def get_sendings(
-        session: Session,
-        spreadsheet_id: str,
-        creds_file_name: str,
-        token_file_name: str,
-        sheet_name: str
+    session: Session,
+    spreadsheet_id: str,
+    creds_file_name: str,
+    token_file_name: str,
+    sheet_name: str
 ) -> None:
 
     sendings_sheet = get_data(
@@ -63,11 +99,11 @@ def get_sendings(
 
 
 def get_organizers(
-        session: Session,
-        spreadsheet_id: str,
-        creds_file_name: str,
-        token_file_name: str,
-        sheet_name: str
+    session: Session,
+    spreadsheet_id: str,
+    creds_file_name: str,
+    token_file_name: str,
+    sheet_name: str
 ) -> None:
 
     organizers_sheet = get_data(
