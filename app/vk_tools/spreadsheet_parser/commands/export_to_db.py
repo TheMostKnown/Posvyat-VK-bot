@@ -6,20 +6,20 @@ from app.vk_tools.spreadsheet_parser.spreadsheet_parser import get_data
 from app.create_db import Sendings, Orgs, Groups, Command, Guests
 
 
-def get_groups(
-    session: Session,
-    spreadsheet_id: str,
-    creds_file_name: str,
-    token_file_name: str,
-    sheet_name: str
+def get_init_data(
+        session: Session,
+        spreadsheet_id: str,
+        creds_file_name: str,
+        token_file_name: str,
 ) -> None:
 
-    groups_sheet = get_data(
+    spreadsheet = get_data(
         spreadsheet_id,
         creds_file_name,
         token_file_name
-    )[sheet_name]
+    )
 
+    groups_sheet = spreadsheet['Levels']
     existing_groups = [group.group_info for group in session.query(Groups).all()]
 
     for i in range(1, len(groups_sheet)):
@@ -36,23 +36,7 @@ def get_groups(
                 )
             )
 
-    session.commit()
-
-
-def get_commands(
-    session: Session,
-    spreadsheet_id: str,
-    creds_file_name: str,
-    token_file_name: str,
-    sheet_name: str
-) -> None:
-
-    commands_sheet = get_data(
-        spreadsheet_id,
-        creds_file_name,
-        token_file_name
-    )[sheet_name]
-
+    commands_sheet = spreadsheet['Commands']
     existing_commands = [command.name for command in session.query(Command).all()]
 
     for i in range(1, len(commands_sheet)):
@@ -73,23 +57,7 @@ def get_commands(
                 )
             )
 
-    session.commit()
-
-
-def get_sendings(
-    session: Session,
-    spreadsheet_id: str,
-    creds_file_name: str,
-    token_file_name: str,
-    sheet_name: str
-) -> None:
-
-    sendings_sheet = get_data(
-        spreadsheet_id,
-        creds_file_name,
-        token_file_name
-    )[sheet_name]
-
+    sendings_sheet = spreadsheet['Sendings']
     existing_sengings = [sending.mail_name for sending in session.query(Sendings).all()]
 
     for i in range(1, len(sendings_sheet)):
@@ -130,23 +98,7 @@ def get_sendings(
                 )
             )
 
-    session.commit()
-
-
-def get_organizers(
-    session: Session,
-    spreadsheet_id: str,
-    creds_file_name: str,
-    token_file_name: str,
-    sheet_name: str
-) -> None:
-
-    organizers_sheet = get_data(
-        spreadsheet_id,
-        creds_file_name,
-        token_file_name
-    )[sheet_name]
-
+    organizers_sheet = spreadsheet['Organizers']
     existing_organizers = [organizer.chat_id for organizer in session.query(Orgs).all()]
 
     for i in range(1, len(organizers_sheet)):
@@ -171,23 +123,7 @@ def get_organizers(
                 )
             )
 
-    session.commit()
-
-
-def get_guests(
-    session: Session,
-    spreadsheet_id: str,
-    creds_file_name: str,
-    token_file_name: str,
-    sheet_name: str
-) -> None:
-
-    guests_sheet = get_data(
-        spreadsheet_id,
-        creds_file_name,
-        token_file_name
-    )[sheet_name]
-
+    guests_sheet = spreadsheet['Guests']
     existing_guests = [guest.chat_id for guest in session.query(Guests).all()]
 
     for i in range(1, len(guests_sheet)):

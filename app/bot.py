@@ -6,8 +6,7 @@ from app.config import settings
 from app.create_db import engine
 from app.vk_tools.utils import dispatcher
 from app.vk_tools.filters.admin import is_admin
-from app.vk_tools.spreadsheet_parser.commands.export_to_db import \
-    get_commands, get_groups, get_sendings, get_guests, get_organizers
+from app.vk_tools.spreadsheet_parser.commands.export_to_db import get_init_data
 
 session = Session(bind=engine)
 
@@ -18,40 +17,11 @@ vk = vk_session.get_api()
 def start():
 
     # filling database
-    get_commands(
+    get_init_data(
         session,
         settings.GOOGLE_TABLE_ID,
         settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
-        settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
-        'Commands'
-    )
-    get_groups(
-        session,
-        settings.GOOGLE_TABLE_ID,
-        settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
-        settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
-        'Levels'
-    )
-    get_sendings(
-        session,
-        settings.GOOGLE_TABLE_ID,
-        settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
-        settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
-        'Sendings'
-    )
-    get_organizers(
-        session,
-        settings.GOOGLE_TABLE_ID,
-        settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
-        settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
-        'Organizers'
-    )
-    get_guests(
-        session,
-        settings.GOOGLE_TABLE_ID,
-        settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
-        settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
-        'Guests'
+        settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH
     )
 
     print('Parsing successful')

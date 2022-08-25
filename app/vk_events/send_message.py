@@ -47,6 +47,7 @@ def send_message(
             random_id=get_random_id(),
             keyboard=None if not keyboard else keyboard.get_keyboard()
         )
+        print(message_id)
 
         # Задержка от спама
         time.sleep(settings.DELAY)
@@ -55,11 +56,11 @@ def send_message(
     except Exception as e:
 
         session = get_session(engine)
-        user = session.query(Guests).filter_by(id=chat_id).first()
-        organizer = session.query(Orgs).filter_by(id=chat_id).first()
+        user = session.query(Guests).filter_by(chat_id=chat_id).first()
+        organizer = session.query(Orgs).filter_by(chat_id=chat_id).first()
 
         if user:
-            domain = session.query(Guests).filter_by(id=chat_id).first().vk_link
+            domain = session.query(Guests).filter_by(chat_id=chat_id).first().vk_link
 
             error_text = f'Пользователю vk.com/{domain} ({chat_id})' \
                          f'не отправилось сообщение "{text}"\n' \
@@ -71,7 +72,7 @@ def send_message(
             )
 
         elif organizer:
-            domain = session.query(Guests).filter_by(id=chat_id).first().vk_org_link
+            domain = session.query(Orgs).filter_by(chat_id=chat_id).first().vk_link
 
             error_text = f'Пользователю vk.com/{domain} ({chat_id})' \
                          f'не отправилось сообщение "{text}"\n' \

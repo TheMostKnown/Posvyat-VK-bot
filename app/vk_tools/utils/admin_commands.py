@@ -28,18 +28,15 @@ def get_commands(
 
     :return: error number or 0
     """
-    if event.message:
-        chat_id = event.message['from_id']
-    else:
-        chat_id = event.object['user_id']
+    chat_id = event.raw[3]
 
     params = dict()
 
     commands = [{
         'name': command.name,
-        'arguments': json.loads(command.arguments),
+        'arguments': command.arguments,
         'info': command.desc
-    } for command in session.query(Command).filter_by(admin=True)]
+    } for command in session.query(Command)]
 
     if args:
         if not args[0].isdigit():
@@ -62,12 +59,7 @@ def get_commands(
                 message_texts.append(message_text)
                 message_text = ''
 
-            message_text += f'\n{i + 1}) !{command["name"]}'
-
-            for arg in command['arguments']:
-                message_text += f' <{arg}>'
-
-            message_text += f'  ({command["info"]})'
+            message_text += f'\n{i + 1}) {command["name"]} {command["arguments"]}  ({command["info"]}'
 
     message_texts.append(message_text)
 
@@ -136,10 +128,7 @@ def get_mailings(
 
     message_texts.append(message_text)
 
-    if event.message:
-        chat_id = event.message['from_id']
-    else:
-        chat_id = event.object['user_id']
+    chat_id = event.raw[3]
 
     for message_text in message_texts:
         send_message(
@@ -213,10 +202,7 @@ def get_guests(
             return 9
         params['quantity'] = int(args[0])
 
-    if event.message:
-        chat_id = event.message['from_id']
-    else:
-        chat_id = event.object['user_id']
+    chat_id = event.raw[3]
 
     users = session.query(Guests).filter(Guests.id != chat_id)
     if params and 'quantity' in params.keys() and params['quantity'] < users.count():
@@ -288,10 +274,7 @@ def get_orgs(
             return 9
         params['quantity'] = int(args[0])
 
-    if event.message:
-        chat_id = event.message['from_id']
-    else:
-        chat_id = event.object['user_id']
+    chat_id = event.raw[3]
 
     users = session.query(Orgs).filter(Orgs.id != chat_id)
     if params and 'quantity' in params.keys() and params['quantity'] < users.count():
@@ -375,10 +358,7 @@ def get_groups(
 
     message_texts.append(message_text)
 
-    if event.message:
-        chat_id = event.message['from_id']
-    else:
-        chat_id = event.object['user_id']
+    chat_id = event.raw[3]
 
     for message_text in message_texts:
         send_message(
