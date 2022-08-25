@@ -6,6 +6,38 @@ from app.vk_tools.spreadsheet_parser.spreadsheet_parser import get_data
 from app.create_db import Sendings, Orgs, Groups, Command, Guests
 
 
+def get_groups(
+    session: Session,
+    spreadsheet_id: str,
+    creds_file_name: str,
+    token_file_name: str,
+    sheet_name: str
+) -> None:
+
+    groups_sheet = get_data(
+        spreadsheet_id,
+        creds_file_name,
+        token_file_name
+    )[sheet_name]
+
+    existing_groups = [group.group_info for group in session.query(Groups).all()]
+
+    for i in range(1, len(groups_sheet)):
+        group_info = groups_sheet[i][1]
+
+        if group_info not in existing_groups:
+            group_num = groups_sheet[i][0]
+
+            session.add(
+                Groups(
+                    group_num=group_num,
+                    group_info=group_info
+                )
+            )
+
+    session.commit()
+
+
 def get_commands(
     session: Session,
     spreadsheet_id: str,

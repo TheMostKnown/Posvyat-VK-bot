@@ -152,7 +152,7 @@ def get_mailings(
     return 0
 
 
-# args = [{user.domain}, {step.number}]
+# args = [{Guests.vk_link}, {Groups.number}]
 def give_level(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,

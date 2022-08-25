@@ -6,6 +6,8 @@ from app.config import settings
 from app.create_db import engine
 from app.vk_tools.utils import dispatcher
 from app.vk_tools.filters.admin import is_admin
+from app.vk_tools.spreadsheet_parser.commands.export_to_db import \
+    get_commands, get_groups, get_sendings, get_guests, get_organizers
 
 session = Session(bind=engine)
 
@@ -14,6 +16,43 @@ vk = vk_session.get_api()
 
 
 def start():
+
+    # filling database
+    get_commands(
+        session,
+        settings.GOOGLE_TABLE_ID,
+        settings.GOOGLE_CREDS_PATH,
+        settings.GOOGLE_TOKEN_PATH,
+        'Команды'
+    )
+    get_groups(
+        session,
+        settings.GOOGLE_TABLE_ID,
+        settings.GOOGLE_CREDS_PATH,
+        settings.GOOGLE_TOKEN_PATH,
+        'Уровни'
+    )
+    get_sendings(
+        session,
+        settings.GOOGLE_TABLE_ID,
+        settings.GOOGLE_CREDS_PATH,
+        settings.GOOGLE_TOKEN_PATH,
+        'Рассылки'
+    )
+    get_organizers(
+        session,
+        settings.GOOGLE_TABLE_ID,
+        settings.GOOGLE_CREDS_PATH,
+        settings.GOOGLE_TOKEN_PATH,
+        'Организаторы'
+    )
+    get_guests(
+        session,
+        settings.GOOGLE_TABLE_ID,
+        settings.GOOGLE_CREDS_PATH,
+        settings.GOOGLE_TOKEN_PATH,
+        'Участники'
+    )
 
     while True:
 
