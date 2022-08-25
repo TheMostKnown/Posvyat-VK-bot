@@ -60,7 +60,7 @@ def get_commands(
         if name not in existing_commands:
             arguments = commands_sheet[i][1]
             desc = commands_sheet[i][2]
-            admin = True if commands_sheet[i][3] == 'True' else False
+            admin = True if commands_sheet[i][3] == '1' else False
 
             session.add(
                 Command(

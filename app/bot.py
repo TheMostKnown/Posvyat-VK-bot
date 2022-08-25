@@ -21,38 +21,40 @@ def start():
     get_commands(
         session,
         settings.GOOGLE_TABLE_ID,
-        settings.GOOGLE_CREDS_PATH,
-        settings.GOOGLE_TOKEN_PATH,
-        'Команды'
+        settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
+        settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
+        'Commands'
     )
     get_groups(
         session,
         settings.GOOGLE_TABLE_ID,
-        settings.GOOGLE_CREDS_PATH,
-        settings.GOOGLE_TOKEN_PATH,
-        'Уровни'
+        settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
+        settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
+        'Levels'
     )
     get_sendings(
         session,
         settings.GOOGLE_TABLE_ID,
-        settings.GOOGLE_CREDS_PATH,
-        settings.GOOGLE_TOKEN_PATH,
-        'Рассылки'
+        settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
+        settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
+        'Sendings'
     )
     get_organizers(
         session,
         settings.GOOGLE_TABLE_ID,
-        settings.GOOGLE_CREDS_PATH,
-        settings.GOOGLE_TOKEN_PATH,
-        'Организаторы'
+        settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
+        settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
+        'Organizers'
     )
     get_guests(
         session,
         settings.GOOGLE_TABLE_ID,
-        settings.GOOGLE_CREDS_PATH,
-        settings.GOOGLE_TOKEN_PATH,
-        'Участники'
+        settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
+        settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
+        'Guests'
     )
+
+    print('Parsing successful')
 
     while True:
 

@@ -15,7 +15,8 @@ engine = create_engine(settings.DB_PATH, pool_size=1000)
 class Groups(database):
     __tablename__ = 'groups'
 
-    group_num = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    group_num = Column(Integer)
     group_info = Column(String)
 
 
@@ -50,22 +51,23 @@ class Orgs(database):
 class Sendings(database):
     __tablename__ = 'sendings'
 
-    id = Column(String, primary_key=True)
-    mail_name = Column(String, primary_key=True)
-    send_time = Column(DateTime)
-    groups = Column(String, ForeignKey('groups', onupdate='cascade', ondelete='cascade'))
+    id = Column(String, primary_key=True, autoincrement=True)
+    mail_name = Column(String, unique=True)
     text = Column(String)
-    pics = Column(String)
-    video = Column(String)
-    reposts = Column(String)
-    docs = Column(String)
+    groups = Column(String, ForeignKey('groups', onupdate='cascade', ondelete='cascade'))
+    send_time = Column(DateTime, nullable=True)
+    pics = Column(String, nullable=True)
+    video = Column(String, nullable=True)
+    reposts = Column(String, nullable=True)
+    docs = Column(String, nullable=True)
 
 
 # Таблица с инфой о посвяте
 class Info(database):
     __tablename__ = 'info'
 
-    question = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    question = Column(String)
     answer = Column(String)
 
 
@@ -73,7 +75,7 @@ class Info(database):
 class TechSupport(database):
     __tablename__ = 'tech_support'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     vk_link = Column(String, ForeignKey('guests.vk_link', onupdate='cascade', ondelete='cascade'))
     per_question = Column(String)
     status = Column(Boolean)
@@ -83,7 +85,8 @@ class TechSupport(database):
 class Command(database):
     __tablename__ = 'command'
 
-    name = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String)
     arguments = Column(String)
     desc = Column(String)
     admin = Column(Boolean)
