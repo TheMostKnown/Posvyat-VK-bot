@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     DB_PATH: Optional[str]
 
     GOOGLE_TABLE_ID: Optional[str]
-    GOOGLE_FOLDER_ID: Optional[str]
 
+    GOOGLE_FOLDER_ID: Optional[str]
     GOOGLE_CREDS_PATH: Optional[str]
     GOOGLE_TOKEN_PATH: Optional[str]
 
@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     class Config:
         env_prefix = 'POSVYAT_VK_'
-        env_file = f'{dir_name}\secrets\.env'
+        env_file = f'{dir_name}/secrets/.env'
         env_file_encoding = 'utf-8'
         fields = {
             'TECH_SUPPORT_VK_ID': {'env': 'TECH_SUPPORT_VK_ID'},
