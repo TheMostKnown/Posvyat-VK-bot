@@ -3,7 +3,7 @@ import json
 from sqlalchemy.orm import Session
 
 from app.vk_tools.spreadsheet_parser.spreadsheet_parser import get_data
-from app.create_db import Sendings, Orgs, Groups, Command
+from app.create_db import Sendings, Orgs, Groups, Command, Guests
 
 
 def get_commands(
@@ -132,6 +132,52 @@ def get_organizers(
                     patronymic=patronymic,
                     vk_link=vk_link,
                     groups=f'[{groups}]'
+                )
+            )
+
+    session.commit()
+
+
+def get_guests(
+    session: Session,
+    spreadsheet_id: str,
+    creds_file_name: str,
+    token_file_name: str,
+    sheet_name: str
+) -> None:
+
+    guests_sheet = get_data(
+        spreadsheet_id,
+        creds_file_name,
+        token_file_name
+    )[sheet_name]
+
+    existing_guests = [guest.chat_id for guest in session.query(Guests).all()]
+
+    for i in range(1, len(guests_sheet)):
+        chat_id = guests_sheet[i][0]
+
+        if chat_id not in existing_guests:
+            surname = guests_sheet[i][1]
+            name = guests_sheet[i][2]
+            patronymic = guests_sheet[i][3]
+            phone_number = guests_sheet[i][4]
+            tag = guests_sheet[i][5]
+            vk_link = guests_sheet[i][6]
+            groups = guests_sheet[i][7]
+            texts = guests_sheet[i][8]
+
+            session.add(
+                Guests(
+                    chat_id=chat_id,
+                    surname=surname,
+                    name=name,
+                    patronymic=patronymic,
+                    phone_number=phone_number,
+                    tag=tag,
+                    vk_link=vk_link,
+                    groups=f'[{groups}]',
+                    texts=f'[{texts}]'
                 )
             )
 
