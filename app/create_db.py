@@ -53,7 +53,7 @@ class Sendings(database):
     id = Column(String, primary_key=True)
     mail_name = Column(String, primary_key=True)
     send_time = Column(DateTime)
-    group_num = Column(Integer, ForeignKey('groups', onupdate='cascade', ondelete='cascade'))
+    groups = Column(String, ForeignKey('groups', onupdate='cascade', ondelete='cascade'))
     text = Column(String)
     pics = Column(String)
     video = Column(String)

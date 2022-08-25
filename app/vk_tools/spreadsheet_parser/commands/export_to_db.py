@@ -3,7 +3,7 @@ import json
 from sqlalchemy.orm import Session
 
 from app.vk_tools.spreadsheet_parser.spreadsheet_parser import get_data
-from app.create_db import Sendings, Orgs
+from app.create_db import Sendings, Orgs, Groups
 
 
 def get_sendings(
@@ -20,41 +20,44 @@ def get_sendings(
         token_file_name
     )[sheet_name]
 
-    for row in sendings_sheet:
-        name = row[0]
-        group_num = row[1]
-        send_time = row[2]
-        text = row[3]
-        pics = list()
-        video = list()
-        reposts = list()
-        docs = list()
+    existing_sengings = [sending.mail_name for sending in session.query(Sendings).all()]
 
-        if row[4]:
-            pics.append(row[4])
-        if row[5]:
-            pics.append(row[5])
-        if row[6]:
-            video.append(row[6])
-        if row[7]:
-            reposts.append(row[7])
-        if row[8]:
-            docs.append(row[8])
-        if row[9]:
-            docs.append(row[9])
+    for i in range(1, len(sendings_sheet)):
+        name = sendings_sheet[i][0]
 
-        session.add(
-            Sendings(
-                mail_name=name,
-                send_time=send_time,
-                group_num=group_num,
-                text=text,
-                pics=json.dumps(pics),
-                video=json.dumps(video),
-                reposts=json.dumps(reposts),
-                docs=json.dumps(docs)
+        if name not in existing_sengings:
+
+            text = sendings_sheet[i][1]
+            groups = sendings_sheet[i][2]
+            send_time = sendings_sheet[i][3]
+            pics = sendings_sheet[i][4]
+            video = sendings_sheet[i][5]
+            reposts = sendings_sheet[i][6]
+            docs = sendings_sheet[i][7]
+
+            groups_json = ''
+            if groups[0] != '!':
+                groups_json = groups
+            else:
+                groups_from_db = session.query(Groups).all()
+                not_selected_groups = json.loads(f'[{groups[1:]}]')
+
+                for group in groups_from_db:
+                    if group not in not_selected_groups:
+                        groups_json += f'{group},'
+
+            session.add(
+                Sendings(
+                    mail_name=name,
+                    send_time=send_time,
+                    groups=f'[{groups_json}]',
+                    text=text,
+                    pics=f'[{pics}]',
+                    video=f'[{video}]',
+                    reposts=f'[{reposts}]',
+                    docs=f'[{docs}]'
+                )
             )
-        )
 
     session.commit()
 
