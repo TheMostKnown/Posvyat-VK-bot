@@ -1,3 +1,5 @@
+import logging
+
 import vk_api
 from sqlalchemy.orm import Session
 from vk_api.longpoll import VkLongPoll, VkEventType
