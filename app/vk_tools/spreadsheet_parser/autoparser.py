@@ -20,22 +20,24 @@ def add_info_to_db(
         guest = session.query(Guests).filter_by(surname=row[0]).first()
 
         if guest:
-            guest.surname = row[0]
-            guest.name = row[1]
-            guest.patronymic = row[2]
-            guest.phone_number = row[3]
-            guest.tag = row[4]
-            guest.vk_link = row[5]
-            guest.groups = f'[{row[6]}]'
+            guest.chat_id = row[0]
+            guest.surname = row[1]
+            guest.name = row[2]
+            guest.patronymic = row[3]
+            guest.phone_number = row[4]
+            guest.tag = row[5]
+            guest.vk_link = row[6]
+            guest.groups = f'[{row[7]}]'
         else:
             session.add(Guests(
-                surname=row[0],
-                name=row[1],
-                patronymic=row[2],
-                phone_number=row[3],
-                tag=row[4],
-                vk_link=row[5],
-                groups=f'[{row[6]}]'
+                chat_id=row[0],
+                surname=row[1],
+                name=row[2],
+                patronymic=row[3],
+                phone_number=row[4],
+                tag=row[5],
+                vk_link=row[6],
+                groups=f'[{row[7]}]'
             ))
 
         session.commit()

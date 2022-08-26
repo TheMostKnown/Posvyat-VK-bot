@@ -85,13 +85,13 @@ def get_data(
             if 'rowData' not in data.keys():
                 continue
 
-            rowData = data['rowData']
+            row_data = data['rowData']
 
-            for i, row in enumerate(rowData):
+            for i, row in enumerate(row_data):
                 if 'values' in row.keys():
                     for j, value in enumerate(row['values']):
-                        if value and 'formatted_value' in value.keys():
-                            row['values'][j] = value['formatted_value']
+                        if value and 'formattedValue' in value.keys():
+                            row['values'][j] = value['formattedValue']
                         else:
                             row['values'][j] = None
 

@@ -1,17 +1,18 @@
+import json
+
 import vk_api
 from typing import List, Optional
-import json
 from sqlalchemy.orm import Session
 
-from app.create_db import Sendings, Guests, Orgs, Groups
-from send_message import send_message
+from app.create_db import Sendings, Guests, Groups
+from app.vk_events.send_message import send_message
 
 
-# args = [Sendings.mail_name, None | Groups.group_num | Groups.group_info]
+# args = [Sendings.mail_name]
 def messages(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
-        args: Optional[List[str]] = None
+        args: str = None
 ) -> int:
     """ The function of launching mailing in VK.
 
@@ -21,37 +22,33 @@ def messages(
 
     :return: error number or 0
     """
-    if not args or not args[0]:
+
+    if not args:
         return 1
 
-    params = {'mail_name': args[0]}
-
-    text = session.query(Sendings).filter_by(**params).first()
+    text = session.query(Sendings).filter_by(mail_name=args).first()
     if not text:
         return 2
-    if not text.text and not text.media:
+    if not text.text:
         return 10
 
-    params = {}
-    if len(args) > 1 and args[1].isdigit():
-        params['group_number'] = int(args[1])
-    elif len(args) > 1 and args[1]:
-        group = session.query(Groups).filter_by(group_num=args[1]).first()
-        if not group:
-            return 4
-        params['group_number'] = group.group_num
-    elif str(text.group_num).isdigit():
-        params['group_number'] = text.group_num
+    text_groups = json.loads(text.groups)
+    for user in session.query(Guests).all():
+        user_groups = json.loads(user.groups)
+        intersection = []
 
-    for user in session.query(Guests).filter_by(**params):
-        groups = json.loads(user.groups)
+        for elem in user_groups:
+            if elem in text_groups:
+                intersection.append(elem)
 
-        if params['group_number'] in groups:
+        print(f"{intersection}")
+
+        if intersection == text_groups:
             send_message(
                 vk=vk,
-                chat_id=user.id,
+                chat_id=user.chat_id,
                 text=text.text,
-                attachments=[] if not text.attachments else json.loads(text.attachments)
+                attachments=[]
             )
 
     session.commit()

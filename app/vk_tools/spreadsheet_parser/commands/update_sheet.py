@@ -71,7 +71,7 @@ def organizer_cells(spreadsheet: Spreadsheet, orgs: List[Orgs]):
     spreadsheet.prepare_set_values(
         cells_range=cells_range,
         values=[['id'] + [str(org.id) for org in orgs],
-                ['vk_link'] + [org.vk_org_link for org in orgs],
+                ['vk_link'] + [org.vk_link for org in orgs],
                 ['first_name'] + [org.name for org in orgs],
                 ['last_name'] + [org.surname for org in orgs],
                 ['patronymic'] + [org.patronymic for org in orgs],
