@@ -50,3 +50,40 @@ def messages(
 
     session.commit()
     return 0
+
+
+# args = [Guests.vk_link], text
+def messages_by_domain(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        args: str = None
+) -> int:
+    """ The function of launching mailing in VK by user domains.
+
+        :param vk: session for connecting to VK API
+        :param session: session to connect to the database
+        :param args: arguments of the command entered
+
+        :return: error number or 0
+    """
+
+    if not args:
+        return 1
+
+    domains = json.dumps(f'[{args[0]}]')
+    text = args[1]
+
+    for domain in domains:
+        for user in session.query(Guests).all():
+
+            if str(domain) == user.vk_link:
+                send_message(
+                    vk=vk,
+                    chat_id=user.chat_id,
+                    text=text,
+                    attachments=[]
+                )
+                break
+
+    session.commit()
+    return 0

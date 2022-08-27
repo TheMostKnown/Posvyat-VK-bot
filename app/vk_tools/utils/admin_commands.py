@@ -4,7 +4,6 @@ from typing import Optional, List
 import vk_api
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
-from vk_api.bot_longpoll import VkBotEvent
 
 from app.vk_events.send_message import send_message
 from app.vk_tools.admin_handler import admin_add_info

@@ -6,7 +6,7 @@ from vk_api.bot_longpoll import VkBotEvent
 
 from app.vk_tools.utils import admin_commands
 from app.vk_events.send_message import send_message
-from app.vk_events.mailing import messages as start_mailing
+from app.vk_events.mailing import messages as start_mailing, messages_by_domain as start_mailing_by_domain
 from app.vk_events.issues import open_issues
 
 
@@ -19,14 +19,14 @@ def call_admin_command(
 ) -> None:
     command_split = split_command_text(text)
     command = command_split['command']
-    args = command_split['args']
+    args = command_split['args'] if len(command_split['args']) > 0 else None
 
     if command == '/get_commands':
         admin_commands.get_commands(
             vk=vk,
             session=session,
             chat_id=chat_id,
-            args=args[1] if len(args) > 1 else None
+            args=args
         )
 
     elif command == '/get_mailing':
@@ -34,7 +34,7 @@ def call_admin_command(
             vk=vk,
             session=session,
             chat_id=chat_id,
-            args=args[1] if len(args) > 1 else None
+            args=args
         )
 
     elif command == '/get_guests':
@@ -42,7 +42,7 @@ def call_admin_command(
             vk=vk,
             session=session,
             chat_id=chat_id,
-            args=args[1] if len(args) > 1 else None
+            args=args
         )
 
     elif command == '/get_orgs':
@@ -50,7 +50,7 @@ def call_admin_command(
             vk=vk,
             session=session,
             chat_id=chat_id,
-            args=args[1] if len(args) > 1 else None
+            args=args
         )
 
     elif command == '/get_groups':
@@ -58,24 +58,31 @@ def call_admin_command(
             vk=vk,
             session=session,
             chat_id=chat_id,
-            args=args[1] if len(args) > 1 else None
+            args=args
         )
 
     elif command == '/give_level':
         admin_commands.give_level(
             session=session,
-            args=args[1:3] if len(args) > 2 else None
+            args=args
         )
 
     elif command == '/start_mailing':
         start_mailing(
             vk=vk,
             session=session,
-            args=args[1] if len(args) > 1 else None
+            args=args
         )
 
     elif command == '/get_open_issues':
         open_issues(vk=vk, session=session)
+
+    elif command == '/send_message':
+        start_mailing_by_domain(
+            vk=vk,
+            session=session,
+            args=args
+        )
 
     else:
         send_message(
