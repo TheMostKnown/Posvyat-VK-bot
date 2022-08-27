@@ -3,7 +3,6 @@ import logging
 import time
 
 import vk_api
-from sqlalchemy.orm import Session
 from vk_api.longpoll import VkLongPoll, VkEventType
 
 from app.config import settings
@@ -48,10 +47,9 @@ def start():
 
                 # if vk group received new message
                 if event.type == VkEventType.MESSAGE_NEW and event.from_user and event.to_me:
-                    logger.info(f'Received message from chat_id={event.chat_id}: "{event.message}"')
+                    logger.info(f'Received message from chat_id={event.chat_id}: "{event.text}"')
 
                     chat_id = event.user_id
-                    text = event.text.lower()
 
                     if chat_id not in {user_id[0] for user_id in session.query(Guests.chat_id).all()}:
 
@@ -90,12 +88,12 @@ def start():
                         send_message(
                             vk=vk,
                             chat_id=settings.TECH_SUPPORT_VK_ID,
-                            text=f'Пользователь vk.com/{user_info["domain"]} ({event.message["from_id"]}) написал боту.'
+                            text=f'Пользователь vk.com/{user_info["domain"]} ({event.user_id}) написал боту.'
                         )
 
                     session.commit()
 
-                    if not event.message or event.message[0] != '/':
+                    if not event.text or event.text[0] != '/':
 
                         # finishing work with db
                         session.commit()
@@ -103,23 +101,26 @@ def start():
 
                         time.sleep(settings.DELAY)
 
-                    elif is_admin(session=session, chat_id=chat_id):
-                        dispatcher.call_admin_command(
-                            vk=vk,
-                            session=session,
-                            chat_id=chat_id,
-                            event=event,
-                            text=text
-                        )
-
                     else:
-                        dispatcher.call_guest_command(
-                            vk=vk,
-                            session=session,
-                            chat_id=chat_id,
-                            event=event,
-                            text=text
-                        )
+                        logger.info(f'user_id="{event.user_id}" вызвал команду "{event.text}"')
+
+                        if is_admin(session=session, chat_id=chat_id):
+                            dispatcher.call_admin_command(
+                                vk=vk,
+                                session=session,
+                                chat_id=chat_id,
+                                event=event,
+                                text=event.text
+                            )
+
+                        else:
+                            dispatcher.call_guest_command(
+                                vk=vk,
+                                session=session,
+                                chat_id=chat_id,
+                                event=event,
+                                text=event.text
+                            )
 
         except Exception as e:
             logger.error(e)

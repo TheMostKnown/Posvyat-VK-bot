@@ -1,3 +1,5 @@
+import re
+
 import vk_api
 from sqlalchemy.orm import Session
 from vk_api.bot_longpoll import VkBotEvent
@@ -15,60 +17,61 @@ def call_admin_command(
         event: VkBotEvent,
         text: str
 ) -> None:
-    text_split = text.split(sep=" ")
-    command = text_split[0]
+    command_split = split_command_text(text)
+    command = command_split['command']
+    args = command_split['args']
 
     if command == '/get_commands':
         admin_commands.get_commands(
             vk=vk,
             session=session,
-            event=event,
-            args=text_split[1] if len(text_split) > 1 else None
+            chat_id=chat_id,
+            args=args[1] if len(args) > 1 else None
         )
 
     elif command == '/get_mailing':
         admin_commands.get_mailings(
             vk=vk,
             session=session,
-            event=event,
-            args=text_split[1] if len(text_split) > 1 else None
+            chat_id=chat_id,
+            args=args[1] if len(args) > 1 else None
         )
 
     elif command == '/get_guests':
         admin_commands.get_guests(
             vk=vk,
             session=session,
-            event=event,
-            args=text_split[1] if len(text_split) > 1 else None
+            chat_id=chat_id,
+            args=args[1] if len(args) > 1 else None
         )
 
     elif command == '/get_orgs':
         admin_commands.get_orgs(
             vk=vk,
             session=session,
-            event=event,
-            args=text_split[1] if len(text_split) > 1 else None
+            chat_id=chat_id,
+            args=args[1] if len(args) > 1 else None
         )
 
     elif command == '/get_groups':
         admin_commands.get_groups(
             vk=vk,
             session=session,
-            event=event,
-            args=text_split[1] if len(text_split) > 1 else None
+            chat_id=chat_id,
+            args=args[1] if len(args) > 1 else None
         )
 
     elif command == '/give_level':
         admin_commands.give_level(
             session=session,
-            args=text_split[1:3] if len(text_split) > 2 else None
+            args=args[1:3] if len(args) > 2 else None
         )
 
     elif command == '/start_mailing':
         start_mailing(
             vk=vk,
             session=session,
-            args=text_split[1] if len(text_split) > 1 else None
+            args=args[1] if len(args) > 1 else None
         )
 
     elif command == '/get_open_issues':
@@ -95,3 +98,11 @@ def call_guest_command(
         chat_id=chat_id,
         text='Не удалось выполнить. Возможно, такой команды не существует, или у Вас недостаточно прав'
     )
+
+
+def split_command_text(text: str) -> dict:
+    words = list(map(str, text.split()))
+    command_name = words[0].lower()
+    args = re.findall('<(.*?)>', text, re.DOTALL)
+
+    return {'command': command_name, 'args': args}
