@@ -134,7 +134,10 @@ def get_init_data(
                 guest.phone_number = guests_sheet[i][3]
                 guest.tag = guests_sheet[i][4]
 
-                if guests_sheet[i][6] and len(json.dumps(f'[{guests_sheet[i][6]}]')) > json.dumps(guest.groups):
+                groups = json.loads(f'[{guests_sheet[i][6]}]') if guests_sheet[i][6] else None
+                guest_groups = json.loads(guest.groups)
+
+                if groups and len(groups) > len(guest_groups):
                     guest.groups = f'[{guests_sheet[i][6]}]'
 
     session.commit()
