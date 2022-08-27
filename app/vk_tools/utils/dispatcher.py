@@ -88,7 +88,7 @@ def call_admin_command(
         send_message(
             vk=vk,
             chat_id=chat_id,
-            text='Такой команды не существует'
+            text='Не удалось выполнить. Возможно, такой команды не существует'
         )
 
 

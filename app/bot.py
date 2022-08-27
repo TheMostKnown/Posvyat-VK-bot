@@ -51,7 +51,7 @@ def start():
 
                     chat_id = event.user_id
 
-                    if chat_id not in {user_id[0] for user_id in session.query(Guests.chat_id).all()}:
+                    if chat_id not in {session.query(Guests.chat_id).all()}:
 
                         # getting info about user
                         user_info = vk.user.get(user_id=event.user_id, fields='domain')[0]

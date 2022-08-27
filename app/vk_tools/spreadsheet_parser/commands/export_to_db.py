@@ -120,33 +120,21 @@ def get_init_data(
             )
 
     guests_sheet = spreadsheet['Guests']
-    existing_guests = [guest.chat_id for guest in session.query(Guests).all()]
+    existing_guests = session.query(Guests).all()
 
     for i in range(1, len(guests_sheet)):
-        chat_id = int(guests_sheet[i][0])
+        vk_link = guests_sheet[i][6]
 
-        if chat_id not in existing_guests:
-            surname = guests_sheet[i][1]
-            name = guests_sheet[i][2]
-            patronymic = guests_sheet[i][3]
-            phone_number = guests_sheet[i][4]
-            tag = guests_sheet[i][5]
-            vk_link = guests_sheet[i][6]
-            groups = guests_sheet[i][7]
-            texts = guests_sheet[i][8]
+        for guest in existing_guests:
 
-            session.add(
-                Guests(
-                    chat_id=chat_id,
-                    surname=surname,
-                    name=name,
-                    patronymic=patronymic,
-                    phone_number=phone_number,
-                    tag=tag,
-                    vk_link=vk_link,
-                    groups=f'[{groups}]',
-                    texts=f'[{texts}]'
-                )
-            )
+            if vk_link == guest.vk_link:
+                guest.surname = guests_sheet[i][0]
+                guest.name = guests_sheet[i][1]
+                guest.patronymic = guests_sheet[i][2]
+                guest.phone_number = guests_sheet[i][3]
+                guest.tag = guests_sheet[i][4]
+
+                if guests_sheet[i][6] and len(json.dumps(f'[{guests_sheet[i][6]}]')) > json.dumps(guest.groups):
+                    guest.groups = f'[{guests_sheet[i][6]}]'
 
     session.commit()

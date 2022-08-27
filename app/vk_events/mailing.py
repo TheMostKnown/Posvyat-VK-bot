@@ -34,19 +34,22 @@ def messages(
     text_groups = json.loads(text.groups)
     for user in session.query(Guests).all():
         user_groups = json.loads(user.groups)
+        user_texts = json.loads(user.texts)
         intersection = []
 
         for elem in user_groups:
             if elem in text_groups:
                 intersection.append(elem)
 
-        if intersection == text_groups:
+        if intersection == text_groups and text.id not in user_texts:
             send_message(
                 vk=vk,
                 chat_id=user.chat_id,
                 text=text.text,
                 attachments=[]
             )
+            user_texts.append(text.id)
+            user.texts = json.dumps(user_texts)
 
     session.commit()
     return 0
