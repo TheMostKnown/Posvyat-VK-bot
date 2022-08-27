@@ -32,6 +32,11 @@ def messages(
         return 10
 
     text_groups = json.loads(text.groups)
+    text_pics = json.loads(text.pics)
+    text_video = json.loads(text.video)
+    text_reposts = json.loads(text.reposts)
+    text_docs = json.loads(text.docs)
+
     for user in session.query(Guests).all():
         user_groups = json.loads(user.groups)
         user_texts = json.loads(user.texts)

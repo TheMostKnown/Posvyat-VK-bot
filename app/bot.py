@@ -9,7 +9,7 @@ from app.config import settings
 from app.create_db import get_session, engine, Guests, Sendings
 from app.vk_tools.utils import dispatcher
 from app.vk_tools.filters.admin import is_admin
-from app.vk_tools.spreadsheet_parser.commands.export_to_db import get_init_data
+from app.vk_tools.google.spreadsheet_parser.commands.export_to_db import get_init_data
 from app.vk_events.send_message import send_message
 
 # connecting to db
