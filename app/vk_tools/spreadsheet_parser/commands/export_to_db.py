@@ -27,7 +27,6 @@ def get_init_data(
 
         if group_info not in existing_groups:
             group_num = groups_sheet[i][0]
-            print(group_num)
 
             session.add(
                 Groups(

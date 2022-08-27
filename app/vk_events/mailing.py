@@ -1,7 +1,6 @@
 import json
 
 import vk_api
-from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from app.create_db import Sendings, Guests, Groups
@@ -40,8 +39,6 @@ def messages(
         for elem in user_groups:
             if elem in text_groups:
                 intersection.append(elem)
-
-        print(f"{intersection}")
 
         if intersection == text_groups:
             send_message(
