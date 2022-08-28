@@ -2,7 +2,7 @@ import json
 
 from sqlalchemy.orm import Session
 
-from app.vk_tools.spreadsheet_parser.spreadsheet_parser import get_data
+from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
 from app.create_db import Sendings, Orgs, Groups, Command, Guests
 
 
@@ -27,7 +27,6 @@ def get_init_data(
 
         if group_info not in existing_groups:
             group_num = groups_sheet[i][0]
-            print(group_num)
 
             session.add(
                 Groups(
@@ -65,34 +64,30 @@ def get_init_data(
         if name not in existing_sengings:
 
             text = sendings_sheet[i][1]
-            groups = sendings_sheet[i][2]
+            groups_str = sendings_sheet[i][2]
             send_time = sendings_sheet[i][3]
             pics = sendings_sheet[i][4]
             video = sendings_sheet[i][5]
             reposts = sendings_sheet[i][6]
             docs = sendings_sheet[i][7]
 
-            groups_json = ''
-            if groups[0] != '!':
-                groups_json = groups
+            if groups_str[0] != '!':
+                groups_json = f'[{groups_str}]'
             else:
-                groups_from_db = session.query(Groups).all()
-                not_selected_groups = json.loads(f'[{groups[1:]}]')
-
-                for group in groups_from_db:
-                    if group not in not_selected_groups:
-                        groups_json += f'{group},'
+                unwanted_groups = json.loads(f'[{groups_str[1:]}]')
+                groups = session.query(Groups).filter(Groups.id not in unwanted_groups).all()
+                groups_json = json.dumps(groups)
 
             session.add(
                 Sendings(
                     mail_name=name,
                     send_time=send_time,
-                    groups=f'[{groups_json}]',
+                    groups=groups_json,
                     text=text,
-                    pics=f'[{pics}]',
-                    video=f'[{video}]',
-                    reposts=f'[{reposts}]',
-                    docs=f'[{docs}]'
+                    pics=f'[{pics}]' if pics else '[]',
+                    video=f'[{video}]' if video else '[]',
+                    reposts=f'[{reposts}]' if reposts else '[]',
+                    docs=f'[{docs}]' if docs else '[]'
                 )
             )
 
@@ -121,33 +116,24 @@ def get_init_data(
             )
 
     guests_sheet = spreadsheet['Guests']
-    existing_guests = [guest.chat_id for guest in session.query(Guests).all()]
+    existing_guests = session.query(Guests).all()
 
     for i in range(1, len(guests_sheet)):
-        chat_id = int(guests_sheet[i][0])
+        vk_link = guests_sheet[i][6]
 
-        if chat_id not in existing_guests:
-            surname = guests_sheet[i][1]
-            name = guests_sheet[i][2]
-            patronymic = guests_sheet[i][3]
-            phone_number = guests_sheet[i][4]
-            tag = guests_sheet[i][5]
-            vk_link = guests_sheet[i][6]
-            groups = guests_sheet[i][7]
-            texts = guests_sheet[i][8]
+        for guest in existing_guests:
 
-            session.add(
-                Guests(
-                    chat_id=chat_id,
-                    surname=surname,
-                    name=name,
-                    patronymic=patronymic,
-                    phone_number=phone_number,
-                    tag=tag,
-                    vk_link=vk_link,
-                    groups=f'[{groups}]',
-                    texts=f'[{texts}]'
-                )
-            )
+            if vk_link == guest.vk_link:
+                guest.surname = guests_sheet[i][0]
+                guest.name = guests_sheet[i][1]
+                guest.patronymic = guests_sheet[i][2]
+                guest.phone_number = guests_sheet[i][3]
+                guest.tag = guests_sheet[i][4]
+
+                groups = json.loads(f'[{guests_sheet[i][6]}]') if guests_sheet[i][6] else None
+                guest_groups = json.loads(guest.groups)
+
+                if groups and len(groups) > len(guest_groups):
+                    guest.groups = f'[{guests_sheet[i][6]}]'
 
     session.commit()

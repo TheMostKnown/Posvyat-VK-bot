@@ -3,7 +3,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from app.vk_tools.spreadsheet_parser.spreadsheet_parser import get_data
+from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
 from app.create_db import Sendings
 
 

@@ -11,7 +11,8 @@ class Settings(BaseSettings):
     DIR_NAME: str = os.path.dirname(__file__)
 
     VK_TOKEN: Optional[str]
-    TECH_SUPPORT_VK_ID: Optional[str]
+    VK_GROUP_ID: Optional[int]
+    TECH_SUPPORT_VK_ID: Optional[int]
 
     DB_PATH: Optional[str]
 
@@ -28,8 +29,9 @@ class Settings(BaseSettings):
         env_file = f'{dir_name}/secrets/.env'
         env_file_encoding = 'utf-8'
         fields = {
-            'TECH_SUPPORT_VK_ID': {'env': 'TECH_SUPPORT_VK_ID'},
             'VK_TOKEN': {'env': 'VK_TOKEN'},
+            'VK_GROUP_ID': {'env': 'VK_GROUP_ID'},
+            'TECH_SUPPORT_VK_ID': {'env': 'TECH_SUPPORT_VK_ID'},
             'DB_PATH': {'env': 'DB_PATH'},
             'GOOGLE_TABLE_ID': {'env': 'GOOGLE_TABLE_ID'},
             'GOOGLE_FOLDER_ID': {'env': 'GOOGLE_FOLDER_ID'},

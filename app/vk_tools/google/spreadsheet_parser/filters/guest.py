@@ -1,4 +1,4 @@
-from app.vk_tools.spreadsheet_parser.spreadsheet_parser import get_data
+from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
 
 
 def get_guests_status(

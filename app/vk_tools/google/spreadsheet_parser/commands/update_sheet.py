@@ -1,7 +1,7 @@
 from typing import List
 
 from app.create_db import Guests, Orgs, Groups, Sendings
-from app.vk_tools.spreadsheet_parser.spreadsheet_parser import Spreadsheet
+from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import Spreadsheet
 
 
 def sending_cells(spreadsheet: Spreadsheet, sendings: List[Sendings]):

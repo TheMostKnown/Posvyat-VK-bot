@@ -1,3 +1,5 @@
+from enum import Enum
+
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -92,6 +94,22 @@ class Command(database):
     admin = Column(Boolean)
 
 
+# Таблица с вложениями
+class Attachments(database):
+    __tablename__ = 'attachments'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String)
+    type = Column(String)
+
+
+class AttachmentTypes(Enum):
+    PIC = 'picture'
+    VID = 'video'
+    POST = 'post'
+    DOC = 'document'
+
+
 # Создание таблиц
 def create_tables(engine: Engine) -> None:
     database.metadata.create_all(engine)
@@ -110,6 +128,7 @@ def delete_tables():
     Sendings.__table__.drop(engine)
     Info.__table__.drop(engine)
     TechSupport.__table__.drop(engine)
+    Command.__table__.drop(engine)
 
 
 if __name__ == "__main__":
