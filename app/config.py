@@ -11,8 +11,8 @@ class Settings(BaseSettings):
     DIR_NAME: str = os.path.dirname(__file__)
 
     VK_TOKEN: Optional[str]
-    VK_GROUP_ID: Optional[str]
-    TECH_SUPPORT_VK_ID: Optional[str]
+    VK_GROUP_ID: Optional[int]
+    TECH_SUPPORT_VK_ID: Optional[int]
 
     DB_PATH: Optional[str]
 

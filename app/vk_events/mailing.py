@@ -38,7 +38,7 @@ def messages(
     text_reposts = json.loads(text.reposts)
     text_docs = json.loads(text.docs)
 
-    pics_ids = [upload_photo(vk, photo_id) for photo_id in text_pics]
+    # pics_ids = [upload_photo(vk, photo_id) for photo_id in text_pics]
 
     for user in session.query(Guests).all():
         user_groups = json.loads(user.groups)
@@ -54,7 +54,7 @@ def messages(
                 vk=vk,
                 chat_id=user.chat_id,
                 text=text.text,
-                attachments=[*pics_ids] if pics_ids else []
+                attachments=[]
             )
             user_texts.append(text.id)
             user.texts = json.dumps(user_texts)

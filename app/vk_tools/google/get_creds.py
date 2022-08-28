@@ -19,7 +19,6 @@ def get_creds(creds_file: str, token_file: str) -> Credentials:
     """
 
     scopes = [
-        'https://www.googleapis.com/auth/spreadsheets.readonly',
         'https://www.googleapis.com/auth/drive.metadata.readonly',
         'https://www.googleapis.com/auth/drive'
     ]

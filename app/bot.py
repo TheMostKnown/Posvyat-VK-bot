@@ -3,7 +3,7 @@ import logging
 import time
 
 import vk_api
-from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 
 from app.config import settings
 from app.create_db import get_session, engine, Guests, Sendings
@@ -43,18 +43,18 @@ def start():
         try:
             logger.info('Bot has launched')
 
-            for event in VkLongPoll(vk_session).listen():
+            for event in VkBotLongPoll(vk=vk_session, group_id=settings.VK_GROUP_ID).listen():
 
                 # if vk group received new message
-                if event.type == VkEventType.MESSAGE_NEW and event.from_user and event.to_me:
-                    logger.info(f'Received message from chat_id={event.chat_id}: "{event.text}"')
+                if event.type == VkBotEventType.MESSAGE_NEW and event.from_user:
+                    logger.info(f'Received message from chat_id={event.message["from_id"]}: "{event.message["text"]}"')
 
-                    chat_id = event.user_id
+                    chat_id = int(event.message['from_id'])
 
-                    if chat_id not in {session.query(Guests.chat_id).all()}:
+                    if chat_id not in {i[0] for i in session.query(Guests.chat_id).all()}:
 
                         # getting info about user
-                        user_info = vk.user.get(user_id=event.user_id, fields='domain')[0]
+                        user_info = vk.users.get(user_id=chat_id, fields='domain')[0]
                         user_groups = json.dumps([1, 2]) \
                             if vk.groups.isMember(group_id=settings.VK_GROUP_ID, user_id=chat_id) == 1 \
                             else json.dumps([1])
@@ -72,8 +72,8 @@ def start():
                                 texts=json.dumps([])
                             )
                         )
-                        logger.info(f'Добавлен пользователь: '
-                                    f'chat_id="{event.chat_id}", '
+                        logger.info(f'Added new user: '
+                                    f'chat_id="{chat_id}", '
                                     f'link=vk.com/{user_info["domain"]}')
 
                         welcome_text = session.query(Sendings).filter_by(mail_name='welcome').first()
@@ -88,12 +88,12 @@ def start():
                         send_message(
                             vk=vk,
                             chat_id=settings.TECH_SUPPORT_VK_ID,
-                            text=f'Пользователь vk.com/{user_info["domain"]} ({event.user_id}) написал боту.'
+                            text=f'Пользователь vk.com/{user_info["domain"]} ({chat_id}) написал боту'
                         )
 
                     session.commit()
 
-                    if not event.text or event.text[0] != '/':
+                    if not event.message['text'] or event.message['text'][0] != '/':
 
                         # finishing work with db
                         session.commit()
@@ -102,7 +102,7 @@ def start():
                         time.sleep(settings.DELAY)
 
                     else:
-                        logger.info(f'user_id="{event.user_id}" вызвал команду "{event.text}"')
+                        logger.info(f'user_id="{chat_id}" has just invoked command {event.message["text"]}')
 
                         if is_admin(session=session, chat_id=chat_id):
                             dispatcher.call_admin_command(
@@ -110,7 +110,7 @@ def start():
                                 session=session,
                                 chat_id=chat_id,
                                 event=event,
-                                text=event.text
+                                text=event.message['text']
                             )
 
                         else:
@@ -119,7 +119,7 @@ def start():
                                 session=session,
                                 chat_id=chat_id,
                                 event=event,
-                                text=event.text
+                                text=event.message['text']
                             )
 
         except Exception as e:
