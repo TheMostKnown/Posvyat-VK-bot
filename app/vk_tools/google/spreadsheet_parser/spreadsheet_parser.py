@@ -6,8 +6,8 @@ from app.vk_tools.google.get_creds import get_creds
 
 def get_data(
         spreadsheet_id: str,
-        creds_file_name: str = 'credentials.json',
-        token_file_name: str = 'token.json'
+        creds_file_name: str,
+        token_file_name: str
 ) -> dict:
     """Retrieves all non-empty rows from spreadsheet
 

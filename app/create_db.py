@@ -1,3 +1,5 @@
+from enum import Enum
+
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -90,6 +92,22 @@ class Command(database):
     arguments = Column(String)
     desc = Column(String)
     admin = Column(Boolean)
+
+
+# Таблица с вложениями
+class Attachments(database):
+    __tablename__ = 'attachments'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String)
+    type = Column(String)
+
+
+class AttachmentTypes(Enum):
+    PIC = 'picture'
+    VID = 'video'
+    POST = 'post'
+    DOC = 'document'
 
 
 # Создание таблиц
