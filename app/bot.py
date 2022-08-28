@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import time
 
 import vk_api
@@ -43,7 +44,7 @@ def start():
         try:
             logger.info('Bot has launched')
 
-            for event in VkBotLongPoll(vk=vk_session, group_id=settings.VK_GROUP_ID).listen():
+            for event in VkBotLongPoll(vk=vk_session, group_id=settings.VK_GROUP_ID, wait=25).listen():
 
                 # if vk group received new message
                 if event.type == VkBotEventType.MESSAGE_NEW and event.from_user:
@@ -51,6 +52,7 @@ def start():
 
                     chat_id = int(event.message['from_id'])
 
+                    # if user is new -> add him to db and send welcome message
                     if chat_id not in {i[0] for i in session.query(Guests.chat_id).all()}:
 
                         # getting info about user
@@ -72,9 +74,11 @@ def start():
                                 texts=json.dumps([])
                             )
                         )
-                        logger.info(f'Added new user: '
-                                    f'chat_id="{chat_id}", '
-                                    f'link=vk.com/{user_info["domain"]}')
+                        logger.info(
+                            f'Added new user: '
+                            f'chat_id="{chat_id}", '
+                            f'link=vk.com/{user_info["domain"]}'
+                        )
 
                         welcome_text = session.query(Sendings).filter_by(mail_name='welcome').first()
 

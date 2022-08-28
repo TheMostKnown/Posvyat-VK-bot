@@ -1,8 +1,10 @@
 import json
+from typing import Optional, List
 
 import vk_api
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.create_db import Sendings, Guests, Groups
 from app.vk_events.send_message import send_message
 from app.vk_tools.utils.upload import upload_photo
@@ -12,7 +14,7 @@ from app.vk_tools.utils.upload import upload_photo
 def messages(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
-        args: str = None
+        args: Optional[List[str]] = None
 ) -> int:
     """ The function of launching mailing in VK.
 
@@ -26,17 +28,17 @@ def messages(
     if not args:
         return 1
 
-    text = session.query(Sendings).filter_by(mail_name=args).first()
+    text = session.query(Sendings).filter_by(mail_name='paying').first()
     if not text:
         return 2
     if not text.text:
         return 10
 
     text_groups = json.loads(text.groups)
-    text_pics = json.loads(text.pics)
-    text_video = json.loads(text.video)
-    text_reposts = json.loads(text.reposts)
-    text_docs = json.loads(text.docs)
+    # text_pics = json.loads(text.pics)
+    # text_video = json.loads(text.video)
+    # text_reposts = json.loads(text.reposts)
+    # text_docs = json.loads(text.docs)
 
     # pics_ids = [upload_photo(vk, photo_id) for photo_id in text_pics]
 

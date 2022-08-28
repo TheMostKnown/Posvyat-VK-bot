@@ -29,7 +29,7 @@ def call_admin_command(
             args=args
         )
 
-    elif command == '/get_mailing':
+    elif command == '/get_mailings':
         admin_commands.get_mailings(
             vk=vk,
             session=session,
@@ -88,7 +88,7 @@ def call_admin_command(
         send_message(
             vk=vk,
             chat_id=chat_id,
-            text='Не удалось выполнить. Возможно, такой команды не существует'
+            text='Не удалось выполнить. Возможно, такой команды не существует. См. /get_commands'
         )
 
 
@@ -108,7 +108,7 @@ def call_guest_command(
 
 
 def split_command_text(text: str) -> dict:
-    words = list(map(str, text.split()))
+    words = text.split(' ')
     command_name = words[0].lower()
     args = re.findall('<(.*?)>', text, re.DOTALL)
 

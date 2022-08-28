@@ -84,10 +84,10 @@ def get_init_data(
                     send_time=send_time,
                     groups=groups_json,
                     text=text,
-                    pics=f'[{pics}]',
-                    video=f'[{video}]',
-                    reposts=f'[{reposts}]',
-                    docs=f'[{docs}]'
+                    pics=f'[{pics}]' if pics else '[]',
+                    video=f'[{video}]' if video else '[]',
+                    reposts=f'[{reposts}]' if reposts else '[]',
+                    docs=f'[{docs}]' if docs else '[]'
                 )
             )
 
