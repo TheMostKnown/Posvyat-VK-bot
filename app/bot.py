@@ -49,6 +49,7 @@ def start():
                 else:
                     dispatcher.call_guest_command(
                         vk=vk,
+                        vk_session=vk_session,
                         session=session,
                         chat_id=chat_id,
                         event=event,

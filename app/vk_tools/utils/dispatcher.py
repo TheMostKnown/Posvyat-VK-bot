@@ -2,11 +2,10 @@ import vk_api
 from sqlalchemy.orm import Session
 from vk_api.bot_longpoll import VkBotEvent
 
-from app.vk_tools.utils import admin_commands
+from app.vk_tools.utils import admin_commands, user_commands
 from app.vk_events.send_message import send_message
 from app.vk_events.mailing import messages as start_mailing
 from app.vk_events.issues import open_issues
-
 
 def call_admin_command(
         vk: vk_api.vk_api.VkApiMethod,
@@ -84,14 +83,38 @@ def call_admin_command(
 
 def call_guest_command(
         vk: vk_api.vk_api.VkApiMethod,
+        vk_session: vk_api.vk_api.VkApi,
         session: Session,
         chat_id: int,
         event: VkBotEvent,
         text: str
 ) -> None:
 
-    send_message(
-        vk=vk,
-        chat_id=chat_id,
-        text='Не удалось выполнить. Возможно, такой команды не существует, или у Вас недостаточно прав'
-    )
+    if text == 'информация':
+        user_commands.get_information(
+            vk=vk,
+            vk_session=vk_session,
+            session=session,
+            event=event
+        )
+            
+    elif text == 'что пропустил?':
+        user_commands.what_missed(
+            vk=vk,
+            session=session,
+            event=event
+        )
+        
+    elif text == 'техподдержка':
+        user_commands.tech_support(
+            vk=vk,
+            vk_session=vk_session,
+            session=session,
+            event=event
+        )
+
+    else:
+        user_commands.main_menu(
+            vk=vk,
+            event=event
+            )
