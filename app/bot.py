@@ -117,15 +117,15 @@ def start():
                                 text=event.message['text']
                             )
 
-                        else:
-                            dispatcher.call_guest_command(
-                                vk=vk,
-                                vk_session=vk_session,
-                                session=session,
-                                chat_id=chat_id,
-                                event=event,
-                                text=event.message['text']
-                            )
+                    if not is_admin(session=session, chat_id=chat_id):
+                        dispatcher.call_guest_command(
+                            vk=vk,
+                            vk_session=vk_session,
+                            session=session,
+                            chat_id=chat_id,
+                            event=event,
+                            text=event.message['text'].lower()
+                        )
 
         except Exception as e:
             logger.error(e)

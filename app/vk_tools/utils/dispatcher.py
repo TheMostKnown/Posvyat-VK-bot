@@ -1,4 +1,5 @@
 import re
+import logging
 
 import vk_api
 from sqlalchemy.orm import Session
@@ -8,6 +9,8 @@ from app.vk_tools.utils import admin_commands, user_commands
 from app.vk_events.send_message import send_message
 from app.vk_events.mailing import messages as start_mailing, messages_by_domain as start_mailing_by_domain
 from app.vk_events.issues import open_issues
+
+logger = logging.getLogger(__name__)
 
 def call_admin_command(
         vk: vk_api.vk_api.VkApiMethod,
@@ -99,11 +102,12 @@ def call_guest_command(
         event: VkBotEvent,
         text: str
 ) -> None:
-
+    logger.info(f'Inside call_guest, resieved message "{text}"')
     if text == 'информация':
         user_commands.get_information(
             vk=vk,
             vk_session=vk_session,
+            chat_id=chat_id,
             session=session,
             event=event
         )
@@ -111,6 +115,7 @@ def call_guest_command(
     elif text == 'что пропустил?':
         user_commands.what_missed(
             vk=vk,
+            chat_id=chat_id,
             session=session,
             event=event
         )
@@ -119,6 +124,7 @@ def call_guest_command(
         user_commands.tech_support(
             vk=vk,
             vk_session=vk_session,
+            chat_id=chat_id,
             session=session,
             event=event
         )
@@ -126,6 +132,7 @@ def call_guest_command(
     else:
         user_commands.main_menu(
             vk=vk,
+            chat_id=chat_id,
             event=event
             )
 

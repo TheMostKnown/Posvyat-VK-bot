@@ -1,5 +1,6 @@
 import json
 from typing import Optional, List
+import logging
 
 import vk_api
 from sqlalchemy import desc
@@ -7,23 +8,25 @@ from sqlalchemy.orm import Session
 from vk_api.bot_longpoll import VkBotEvent
 from vk_api.longpoll import VkLongPoll, VkEventType
 
+from app.config import settings
 from app.vk_events.send_message import send_message
 from app.vk_tools.keyboards import user_keyboard
-from app.create_db import Info, Guests, TechSupport
+from app.create_db import Info, Guests, TechSupport, Sendings
 
+logger = logging.getLogger(__name__)
 
 def main_menu(
         vk: vk_api.vk_api.VkApiMethod,
+        chat_id: int,
         event: Optional[VkBotEvent] = None,
 ) -> int:
     """ The function of main menu keyboard
 
     :param vk: session for connecting to VK API
+    :param chat_id: user id for sending message
     :param event: event object in VK
-
     :return: error number or 0
     """ 
-    chat_id = event.raw[3]
     send_message(
             vk=vk,
             chat_id=chat_id,
@@ -35,6 +38,7 @@ def main_menu(
 def get_information(
         vk: vk_api.vk_api.VkApiMethod,
         vk_session: vk_api.vk_api.VkApi,
+        chat_id: int,
         session: Session,
         event: Optional[VkBotEvent] = None,
 ) -> int:
@@ -42,12 +46,12 @@ def get_information(
 
     :param vk: session for connecting to VK API
     :param vk_session: VK session
+    :param chat_id: user id for sending message
     :param session: session to connect to the database
     :param event: event object in VK
 
     :return: error number or 0
     """ 
-    chat_id = event.raw[3]
 
     available_info = dict() 
     for i in session.query(Info):
@@ -64,10 +68,10 @@ def get_information(
         )
 
     for info_event in VkLongPoll(vk_session).listen():
-        if info_event.type == VkEventType.MESSAGE_NEW and info_event.to_me and info_event.user_id==chat_id:
+        if info_event.type == VkEventType.MESSAGE_NEW and info_event.to_me and int(info_event.message['from_id'])==chat_id:
 
             info_text = info_event.text
-            info_chat_id = info_event.raw[3]
+            info_chat_id = int(info_event.message['from_id'])
     
 
             if info_text in questions:
@@ -83,6 +87,7 @@ def get_information(
 
 def what_missed(
         vk: vk_api.vk_api.VkApiMethod,
+        chat_id: int,
         session: Session,
         event: Optional[VkBotEvent] = None,
 ) -> int:
@@ -90,20 +95,44 @@ def what_missed(
     user has missed
 
     :param vk: session for connecting to VK API
+    :param chat_id: user id for sending message
     :param session: session to connect to the database
     :param event: event object in VK
 
     :return: error number or 0
     """ 
-    chat_id = event.raw[3]
+    user = session.query(Guests).get(chat_id)
 
-    guest_groups = json.loads(session.query(Guests.groups).filter(Guests.id == chat_id).first()[0])
-    
+    user_groups = json.loads(user.groups)
+    user_texts = json.loads(user.texts)
+
+    missing = []
+
+    for elem in session.query(Sendings):
+        sending_groups = json.loads(elem.groups)
+        #проверка входят ли уровни рассылки в уровни пользователя
+        if set(sending_groups).issubset(user_groups):
+            if not elem.id in user_texts:
+                missing.append(elem.id)
+    if len(missing) == 0:
+        send_message(vk, chat_id, "У вас нет пропущенных рассылок.")
+        return 0
+
+    send_message(vk, chat_id, "Пропущенные рассылки: ")
+    for item in missing:
+        sending = session.query(Sendings.text).filter(Sendings.id==item).first()[0]
+        send_message(vk, chat_id, sending)
+        
+        user_texts.append(item)
+    user.texts = json.dumps(user_texts)
+    session.commit()
+        
     return 0
 
 def tech_support(
         vk: vk_api.vk_api.VkApiMethod,
         vk_session: vk_api.vk_api.VkApi,
+        chat_id: int,
         session: Session,
         event: Optional[VkBotEvent] = None,
 ) -> int:
@@ -111,22 +140,23 @@ def tech_support(
 
     :param vk: session for connecting to VK API
     :param vk_session: VK session
+    :param chat_id: user id for sending message
     :param session: session to connect to the database
     :param event: event object in VK
 
     :return: error number or 0
     """ 
-    chat_id =  event.raw[3]
     main_message = 'Вы можете направить обращение в техническую поддержку.\n'
     main_message += 'Пожалуйста, изложите свою проблему в одном сообщении.\n'
     main_message += 'Если вы передумали связываться с техподдержкой, отправьте "отмена"'
     send_message(vk, chat_id, main_message)
 
     for tech_event in VkLongPoll(vk_session).listen():
-        if tech_event.type == VkEventType.MESSAGE_NEW and tech_event.to_me and tech_event.user_id == chat_id:
+        logger.info('Inside Tech Support listen for message')
+        if tech_event.type == VkEventType.MESSAGE_NEW and tech_event.to_me and int(tech_event.message['from_id']) == chat_id:
 
             tech_text = tech_event.text
-            tech_chat_id = tech_event.raw[3]
+            tech_chat_id = int(tech_event.message['from_id'])
 
             if tech_text.lower() == 'отмена':
                 return 0
@@ -138,21 +168,30 @@ def tech_support(
 
 
             for confirm_event in VkLongPoll(vk_session).listen():
-                if confirm_event.type == VkEventType.MESSAGE_NEW and confirm_event.to_me and confirm_event.user_id==tech_chat_id:
+                if confirm_event.type == VkEventType.MESSAGE_NEW and confirm_event.to_me and int(confirm_event.message['from_id'])==tech_chat_id:
+                    logger.info('Inside Tech Support listen for "yes" or "cansel"')
 
                     confirm_text = confirm_event.text.lower()
-                    confirm_chat_id = confirm_event.raw[3]
+                    confirm_chat_id = int(confirm_event.message['from_id'])
 
                     if confirm_text == 'да':
+                        user_info = vk.users.get(user_id=confirm_chat_id, fields='domain')[0]
                         session.add(
                             TechSupport(
-                               vk_link=f'id{confirm_chat_id}',
+                               vk_link=user_info['domain'],
                                per_question=tech_text,
                                status='open'
                             )
                         )
                         session.commit()
+                        #сообщение пользователю
                         send_message(vk, confirm_chat_id, "Сообщение успешно отправлено в техподдержку.")
+                        #сообщение техподдержке
+                        send_message(
+                            vk=vk,
+                            chat_id=settings.TECH_SUPPORT_VK_ID,
+                            text=f'Пользователь vk.com/{user_info["domain"]} ({confirm_chat_id}) написал в техподдержку'
+                        )
                         return 0
 
                     elif confirm_text == 'отмена':
