@@ -26,38 +26,17 @@ def upload_photo(
         token_file_name=settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
     )
 
-    url_response = vk.photos.getMessagesUploadServer(
-        access_token=settings.VK_TOKEN,
+    vk_upload = vk_api.VkUpload(vk)
+    upload_response = vk_upload.photo_messages(
+        photos=image_file_path,
         peer_id=settings.TECH_SUPPORT_VK_ID
-    )
+    )[0]
 
-    if isinstance(url_response, dict) and 'upload_url' in url_response.keys():
-        upload_url = url_response['upload_url']
+    if 'owner_id' in upload_response.keys() and 'id' in upload_response.keys():
+        owner_id = upload_response['owner_id']
+        id = upload_response['id']
 
-        with open(image_file_path, 'rb') as file:
-
-            upload = requests.post(
-                url=upload_url,
-                files={'photo': file}
-            )
-
-        upload_response = upload.json()
-
-        # logger.info(upload_response)
-
-        if isinstance(upload_response, dict) and 'photo' in upload_response.keys():
-            save_response = vk.photos.saveMessagesPhoto(
-                photo=upload_response['photo'],
-                server=upload_response['server'],
-                hash=upload_response['hash']
-            )[0]
-
-            # logger.info(save_response)
-
-            if isinstance(save_response, dict) and \
-                    'id' in save_response.keys() and \
-                    'owner_id' in save_response.keys():
-                return f'photo{save_response["owner_id"]}_{save_response["id"]}'
+        return f'photo{owner_id}_{id}'
 
     return ''
 
