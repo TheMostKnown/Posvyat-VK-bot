@@ -35,7 +35,7 @@ def messages(
         return 10
 
     text_groups = json.loads(text.groups)
-    # text_pics = json.loads(text.pics)
+    text_pics = json.loads(text.pics)
     # text_video = json.loads(text.video)
     # text_reposts = json.loads(text.reposts)
     # text_docs = json.loads(text.docs)
@@ -56,7 +56,7 @@ def messages(
                 vk=vk,
                 chat_id=user.chat_id,
                 text=text.text,
-                attachments=[]
+                attachments=text_pics
             )
             user_texts.append(text.id)
             user.texts = json.dumps(user_texts)

@@ -1,17 +1,27 @@
 import json
+import logging
 
+import vk_api.vk_api
 from sqlalchemy.orm import Session
 
 from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
 from app.create_db import Sendings, Orgs, Groups, Command, Guests
+from app.vk_tools.utils.upload import upload_photo
 
 
 def get_init_data(
+        vk: vk_api.vk_api.VkApiMethod,
         session: Session,
         spreadsheet_id: str,
         creds_file_name: str,
         token_file_name: str,
 ) -> None:
+    # Подключение логов
+    logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=logging.INFO
+    )
+    logger = logging.getLogger(__name__)
 
     spreadsheet = get_data(
         spreadsheet_id,
@@ -71,6 +81,23 @@ def get_init_data(
             reposts = sendings_sheet[i][6]
             docs = sendings_sheet[i][7]
 
+            pic_ids = []
+            if pics:
+                pics_json = f'["{pics}"]'
+                pics_list = json.loads(pics_json)
+
+                for pic in pics_list:
+                    pic_id = upload_photo(
+                        vk=vk,
+                        photo_id=pic,
+                        image_file_name=f'./app/vk_tools/google/spreadsheet_parser/attachments/{pic}.png'
+                    )
+
+                    if len(pic_id) != 0:
+                        pic_ids.append(pic_id)
+
+            logger.info(pic_ids)
+
             if groups_str[0] != '!':
                 groups_json = f'[{groups_str}]'
             else:
@@ -84,7 +111,7 @@ def get_init_data(
                     send_time=send_time,
                     groups=groups_json,
                     text=text,
-                    pics=f'[{pics}]' if pics else '[]',
+                    pics=json.dumps(pic_ids) if len(pic_ids) > 0 else '[]',
                     video=f'[{video}]' if video else '[]',
                     reposts=f'[{reposts}]' if reposts else '[]',
                     docs=f'[{docs}]' if docs else '[]'

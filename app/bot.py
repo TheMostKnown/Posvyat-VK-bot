@@ -1,6 +1,5 @@
 import json
 import logging
-import re
 import time
 
 import vk_api
@@ -31,6 +30,7 @@ def start():
 
     # filling database with actual entries
     get_init_data(
+        vk,
         session,
         settings.GOOGLE_TABLE_ID,
         settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
