@@ -38,7 +38,7 @@ def messages(
     text_pics = json.loads(text.pics)
     text_video = json.loads(text.video)
     text_reposts = json.loads(text.reposts)
-    # text_docs = json.loads(text.docs)
+    text_docs = json.loads(text.docs)
 
     for user in session.query(Guests).all():
         user_groups = json.loads(user.groups)
@@ -57,7 +57,8 @@ def messages(
                 attachments=[
                     *text_pics,
                     *text_video,
-                    *text_reposts
+                    *text_reposts,
+                    *text_docs
                 ]
             )
             user_texts.append(text.id)

@@ -1,11 +1,10 @@
-import json
 import requests
 import logging
 
 import vk_api
 
 from app.config import settings
-from app.vk_tools.google.google_drive.google_drive_handler import download_data
+from app.vk_tools.google.google_drive.google_drive_handler import download_picture, download_pdf_doc
 
 # Подключение логов
 logging.basicConfig(
@@ -16,15 +15,15 @@ logger = logging.getLogger(__name__)
 
 
 def upload_photo(
-        vk: vk_api.vk_api.VkApiMethod,
+        vk: vk_api.upload.VkApiMethod,
         photo_id: str,
         image_file_path: str
 ) -> str:
-    download_data(
+    download_picture(
         file_id=photo_id,
+        file_path=image_file_path,
         creds_file_name=settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
         token_file_name=settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
-        image_file_name=image_file_path
     )
 
     url_response = vk.photos.getMessagesUploadServer(
@@ -44,7 +43,7 @@ def upload_photo(
 
         upload_response = upload.json()
 
-        logger.info(upload_response)
+        # logger.info(upload_response)
 
         if isinstance(upload_response, dict) and 'photo' in upload_response.keys():
             save_response = vk.photos.saveMessagesPhoto(
@@ -53,11 +52,39 @@ def upload_photo(
                 hash=upload_response['hash']
             )[0]
 
-            logger.info(save_response)
+            # logger.info(save_response)
 
             if isinstance(save_response, dict) and \
                     'id' in save_response.keys() and \
                     'owner_id' in save_response.keys():
                 return f'photo{save_response["owner_id"]}_{save_response["id"]}'
+
+    return ''
+
+
+def upload_pdf_doc(
+        vk: vk_api.vk_api.VkApiMethod,
+        doc_id: str,
+        doc_file_path: str
+) -> str:
+    download_pdf_doc(
+        file_id=doc_id,
+        file_path=doc_file_path,
+        creds_file_name=settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
+        token_file_name=settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
+    )
+
+    vk_upload = vk_api.VkUpload(vk)
+
+    upload_response = vk_upload.document_message(
+        doc=doc_file_path,
+        peer_id=settings.TECH_SUPPORT_VK_ID
+    )
+
+    if 'doc' in upload_response.keys():
+        owner_id = upload_response['doc']['owner_id']
+        id = upload_response['doc']['id']
+
+        return f'doc{owner_id}_{id}'
 
     return ''

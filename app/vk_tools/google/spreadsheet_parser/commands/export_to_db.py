@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
 from app.create_db import Sendings, Orgs, Groups, Command, Guests
-from app.vk_tools.utils.upload import upload_photo
+from app.vk_tools.utils.upload import upload_photo, upload_pdf_doc
 
 
 def get_init_data(
@@ -29,6 +29,7 @@ def get_init_data(
         token_file_name
     )
 
+    # getting info about guests' groups
     groups_sheet = spreadsheet['Levels']
     existing_groups = [group.group_info for group in session.query(Groups).all()]
 
@@ -45,6 +46,7 @@ def get_init_data(
                 )
             )
 
+    # getting info about commands for calling
     commands_sheet = spreadsheet['Commands']
     existing_commands = [command.name for command in session.query(Command).all()]
 
@@ -65,6 +67,7 @@ def get_init_data(
                 )
             )
 
+    # getting info about mailings
     sendings_sheet = spreadsheet['Sendings']
     existing_sengings = [sending.mail_name for sending in session.query(Sendings).all()]
 
@@ -84,9 +87,8 @@ def get_init_data(
             pic_ids = []
             if pics:
                 pics_json = f'[{pics}]'
-                pics_list = json.loads(pics_json)
 
-                for pic in pics_list:
+                for pic in json.loads(pics_json):
                     pic_id = upload_photo(
                         vk=vk,
                         photo_id=pic,
@@ -97,6 +99,22 @@ def get_init_data(
                         pic_ids.append(pic_id)
 
             logger.info(pic_ids)
+
+            doc_ids = []
+            if docs:
+                docs_json = f'[{docs}]'
+
+                for doc in json.loads(docs_json):
+                    doc_id = upload_pdf_doc(
+                        vk=vk,
+                        doc_id=doc,
+                        doc_file_path=f'./app/vk_tools/google/spreadsheet_parser/attachments/{doc}.pdf'
+                    )
+
+                    if len(doc_id) != 0:
+                        doc_ids.append(doc_id)
+
+            logger.info(doc_ids)
 
             if groups_str[0] != '!':
                 groups_json = f'[{groups_str}]'
@@ -114,10 +132,11 @@ def get_init_data(
                     pics=json.dumps(pic_ids) if len(pic_ids) > 0 else '[]',
                     video=f'[{video}]' if video else '[]',
                     reposts=f'[{reposts}]' if reposts else '[]',
-                    docs=f'[{docs}]' if docs else '[]'
+                    docs=json.dumps(doc_ids) if docs else '[]'
                 )
             )
 
+    # getting info about users with admin rights
     organizers_sheet = spreadsheet['Organizers']
     existing_organizers = [organizer.chat_id for organizer in session.query(Orgs).all()]
 
@@ -142,6 +161,7 @@ def get_init_data(
                 )
             )
 
+    # getting info about participants
     guests_sheet = spreadsheet['Guests']
     existing_guests = session.query(Guests).all()
 
