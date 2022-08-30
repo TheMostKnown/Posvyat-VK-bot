@@ -18,13 +18,13 @@ logger = logging.getLogger(__name__)
 def upload_photo(
         vk: vk_api.vk_api.VkApiMethod,
         photo_id: str,
-        image_file_name: str
+        image_file_path: str
 ) -> str:
     download_data(
         file_id=photo_id,
         creds_file_name=settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
         token_file_name=settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH,
-        image_file_name=image_file_name
+        image_file_name=image_file_path
     )
 
     url_response = vk.photos.getMessagesUploadServer(
@@ -35,7 +35,7 @@ def upload_photo(
     if isinstance(url_response, dict) and 'upload_url' in url_response.keys():
         upload_url = url_response['upload_url']
 
-        with open(image_file_name, 'rb') as file:
+        with open(image_file_path, 'rb') as file:
 
             upload = requests.post(
                 url=upload_url,

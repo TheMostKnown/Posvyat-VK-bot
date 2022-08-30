@@ -83,14 +83,14 @@ def get_init_data(
 
             pic_ids = []
             if pics:
-                pics_json = f'["{pics}"]'
+                pics_json = f'[{pics}]'
                 pics_list = json.loads(pics_json)
 
                 for pic in pics_list:
                     pic_id = upload_photo(
                         vk=vk,
                         photo_id=pic,
-                        image_file_name=f'./app/vk_tools/google/spreadsheet_parser/attachments/{pic}.png'
+                        image_file_path=f'./app/vk_tools/google/spreadsheet_parser/attachments/{pic}.png'
                     )
 
                     if len(pic_id) != 0:
