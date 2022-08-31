@@ -4,7 +4,6 @@ from typing import Optional, List
 import vk_api
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
-from vk_api.bot_longpoll import VkBotEvent
 
 from app.vk_events.send_message import send_message
 from app.vk_tools.admin_handler import admin_add_info
@@ -16,19 +15,18 @@ from app.vk_tools.utils.make_domain import make_domain
 def get_commands(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
-        event: Optional[VkBotEvent] = None,
+        chat_id: int,
         args: Optional[List[str]] = None
 ) -> int:
     """ The function of getting commands from the Command table in DB.
 
     :param vk: session for connecting to VK API
     :param session: session to connect to the database
-    :param event: event object in VK
+    :param chat_id: user id for sending message
     :param args: arguments of the command entered
 
     :return: error number or 0
     """
-    chat_id = event.raw[3]
 
     params = dict()
 
@@ -78,14 +76,14 @@ def get_commands(
 def get_mailings(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
-        event: Optional[VkBotEvent] = None,
+        chat_id: int,
         args: Optional[List[str]] = None
 ) -> int:
     """ The function of getting texts from the Text table in DB.
 
     :param vk: session for connecting to VK API
     :param session: session to connect to the database
-    :param event: event object in VK
+    :param chat_id: user id for sending message
     :param args: arguments of the command entered
 
     :return: error number or 0
@@ -122,8 +120,6 @@ def get_mailings(
             message_text += f'{i + 1}) "{text["mail_name"]}" уровни: {text["groups"]}\n'
 
     message_texts.append(message_text)
-
-    chat_id = event.raw[3]
 
     for message_text in message_texts:
         send_message(
@@ -174,14 +170,14 @@ def give_level(
 def get_guests(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
-        event: Optional[VkBotEvent] = None,
+        chat_id: int,
         args: Optional[List[str]] = None
 ) -> int:
     """ The function of getting users from the Guests table in DB.
 
     :param vk: session for connecting to VK API
     :param session: session to connect to the database
-    :param event: event object in VK
+    :param chat_id: user id for sending message
     :param args: arguments of the command entered
 
     :return: error number or 0
@@ -192,8 +188,6 @@ def get_guests(
         if not args[0].isdigit():
             return 9
         params['quantity'] = int(args[0])
-
-    chat_id = event.raw[3]
 
     users = session.query(Guests).filter(Guests.chat_id != chat_id)
     if params and 'quantity' in params.keys() and params['quantity'] < users.count():
@@ -241,14 +235,14 @@ def get_guests(
 def get_orgs(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
-        event: Optional[VkBotEvent] = None,
+        chat_id: int,
         args: Optional[List[str]] = None
 ) -> int:
     """ The function of getting users from the Orgs table in DB.
 
     :param vk: session for connecting to VK API
     :param session: session to connect to the database
-    :param event: event object in VK
+    :param chat_id: user id for sending message
     :param args: arguments of the command entered
 
     :return: error number or 0
@@ -259,8 +253,6 @@ def get_orgs(
         if not args[0].isdigit():
             return 9
         params['quantity'] = int(args[0])
-
-    chat_id = event.raw[3]
 
     users = session.query(Orgs)
     if params and 'quantity' in params.keys() and params['quantity'] < users.count():
@@ -299,7 +291,7 @@ def get_orgs(
 def get_groups(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
-        event: Optional[VkBotEvent] = None,
+        chat_id: int,
         args: Optional[List[str]] = None
 ) -> int:
     """ The function of getting steps from the Groups table in DB.
@@ -339,8 +331,6 @@ def get_groups(
 
     message_texts.append(message_text)
 
-    chat_id = event.raw[3]
-
     for message_text in message_texts:
         send_message(
             vk=vk,
@@ -356,7 +346,6 @@ def info(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
         chat_id: int,
-        event: VkBotEvent,
         text: str
 ) -> None:
 

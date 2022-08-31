@@ -1,3 +1,5 @@
+from enum import Enum
+
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -110,6 +112,7 @@ def delete_tables():
     Sendings.__table__.drop(engine)
     Info.__table__.drop(engine)
     TechSupport.__table__.drop(engine)
+    Command.__table__.drop(engine)
 
 
 if __name__ == "__main__":
