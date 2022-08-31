@@ -72,7 +72,7 @@ def messages(
 def messages_by_domain(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
-        args: str = None
+        args: Optional[List[str]] = None
 ) -> int:
     """ The function of launching mailing in VK by user domains.
 
