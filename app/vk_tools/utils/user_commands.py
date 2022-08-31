@@ -6,7 +6,7 @@ import vk_api
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from vk_api.bot_longpoll import VkBotEvent
-from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 
 from app.config import settings
 from app.vk_events.send_message import send_message
@@ -54,10 +54,12 @@ def get_information(
     """ 
 
     available_info = dict() 
-    for i in session.query(Info):
+    for i in session.query(Info).all():
         available_info[i.question] = i.answer
 
     questions = list(available_info.keys())
+
+    logger.info(f'Inside Info, availiable info: {available_info}')
     
     send_message(
             vk=vk,
@@ -67,10 +69,12 @@ def get_information(
 
         )
 
-    for info_event in VkLongPoll(vk_session).listen():
-        if info_event.type == VkEventType.MESSAGE_NEW and info_event.to_me and int(info_event.message['from_id'])==chat_id:
+    for info_event in VkBotLongPoll(vk=vk_session, group_id=settings.VK_GROUP_ID, wait=25).listen():
+        logger.info("inside Info listen")
+        logger.info(f"Inside Info listen question: {info_event.message['text']}")
+        if info_event.type == VkBotEventType.MESSAGE_NEW and info_event.from_user:
 
-            info_text = info_event.text
+            info_text = info_event.message['text']
             info_chat_id = int(info_event.message['from_id'])
     
 
@@ -151,11 +155,14 @@ def tech_support(
     main_message += 'Если вы передумали связываться с техподдержкой, отправьте "отмена"'
     send_message(vk, chat_id, main_message)
 
-    for tech_event in VkLongPoll(vk_session).listen():
-        logger.info('Inside Tech Support listen for message')
-        if tech_event.type == VkEventType.MESSAGE_NEW and tech_event.to_me and int(tech_event.message['from_id']) == chat_id:
+    for tech_event in VkBotLongPoll(vk=vk_session, group_id=settings.VK_GROUP_ID, wait=25).listen():
 
-            tech_text = tech_event.text
+        logger.info('Inside Tech Support listen for message')
+
+        if tech_event.type == VkBotEventType.MESSAGE_NEW and tech_event.from_user:
+            
+            tech_text = tech_event.message["text"]
+            logger.info(f'Tech support got message {tech_text}')
             tech_chat_id = int(tech_event.message['from_id'])
 
             if tech_text.lower() == 'отмена':
@@ -167,11 +174,11 @@ def tech_support(
             send_message(vk, tech_chat_id, respond_text)
 
 
-            for confirm_event in VkLongPoll(vk_session).listen():
-                if confirm_event.type == VkEventType.MESSAGE_NEW and confirm_event.to_me and int(confirm_event.message['from_id'])==tech_chat_id:
+            for confirm_event in VkBotLongPoll(vk=vk_session, group_id=settings.VK_GROUP_ID, wait=25).listen():
+                if confirm_event.type == VkBotEventType.MESSAGE_NEW and tech_event.from_user:
                     logger.info('Inside Tech Support listen for "yes" or "cansel"')
 
-                    confirm_text = confirm_event.text.lower()
+                    confirm_text = confirm_event.message["text"].lower()
                     confirm_chat_id = int(confirm_event.message['from_id'])
 
                     if confirm_text == 'да':

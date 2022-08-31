@@ -3,7 +3,7 @@ import json
 from sqlalchemy.orm import Session
 
 from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
-from app.create_db import Sendings, Orgs, Groups, Command, Guests
+from app.create_db import Sendings, Orgs, Groups, Command, Guests, Info
 
 
 def get_init_data(
@@ -135,5 +135,23 @@ def get_init_data(
 
                 if groups and len(groups) > len(guest_groups):
                     guest.groups = f'[{guests_sheet[i][6]}]'
+
+    info_sheet = spreadsheet['Info']
+    existing_info = [information.question for information in session.query(Info).all()]
+
+    for i in range (1, len(info_sheet)):
+
+        info_question = info_sheet[i][0]
+
+        if info_question not in existing_info:
+            info_answer = info_sheet[i][1]
+
+            session.add(
+                Info(
+                    question=info_question,
+                    answer=info_answer
+                )
+            )
+
 
     session.commit()
