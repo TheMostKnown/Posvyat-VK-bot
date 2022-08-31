@@ -98,7 +98,7 @@ def get_init_data(
                     if len(pic_id) != 0:
                         pic_ids.append(pic_id)
 
-            logger.info(pic_ids)
+            logger.info(f'Pics: {pic_ids}')
 
             doc_ids = []
             if docs:
@@ -114,7 +114,7 @@ def get_init_data(
                     if len(doc_id) != 0:
                         doc_ids.append(doc_id)
 
-            logger.info(doc_ids)
+            logger.info(f'Docs: {doc_ids}')
 
             if groups_str[0] != '!':
                 groups_json = f'[{groups_str}]'
