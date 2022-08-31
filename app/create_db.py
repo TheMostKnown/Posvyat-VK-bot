@@ -94,22 +94,6 @@ class Command(database):
     admin = Column(Boolean)
 
 
-# Таблица с вложениями
-class Attachments(database):
-    __tablename__ = 'attachments'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String)
-    type = Column(String)
-
-
-class AttachmentTypes(Enum):
-    PIC = 'picture'
-    VID = 'video'
-    POST = 'post'
-    DOC = 'document'
-
-
 # Создание таблиц
 def create_tables(engine: Engine) -> None:
     database.metadata.create_all(engine)

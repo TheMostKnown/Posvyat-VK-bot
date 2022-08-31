@@ -35,12 +35,10 @@ def messages(
         return 10
 
     text_groups = json.loads(text.groups)
-    # text_pics = json.loads(text.pics)
-    # text_video = json.loads(text.video)
-    # text_reposts = json.loads(text.reposts)
-    # text_docs = json.loads(text.docs)
-
-    # pics_ids = [upload_photo(vk, photo_id) for photo_id in text_pics]
+    text_pics = json.loads(text.pics)
+    text_video = json.loads(text.video)
+    text_reposts = json.loads(text.reposts)
+    text_docs = json.loads(text.docs)
 
     for user in session.query(Guests).all():
         user_groups = json.loads(user.groups)
@@ -56,7 +54,12 @@ def messages(
                 vk=vk,
                 chat_id=user.chat_id,
                 text=text.text,
-                attachments=[]
+                attachments=[
+                    *text_pics,
+                    *text_video,
+                    *text_reposts,
+                    *text_docs
+                ]
             )
             user_texts.append(text.id)
             user.texts = json.dumps(user_texts)
@@ -69,7 +72,7 @@ def messages(
 def messages_by_domain(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
-        args: str = None
+        args: Optional[List[str]] = None
 ) -> int:
     """ The function of launching mailing in VK by user domains.
 
