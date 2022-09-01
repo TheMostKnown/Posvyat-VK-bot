@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
 from app.create_db import Sendings, Orgs, Groups, Command, Guests
+from app.vk_tools.utils.make_domain import make_domain
 from app.vk_tools.utils.upload import upload_photo, upload_pdf_doc
 
 
@@ -147,7 +148,7 @@ def get_init_data(
             surname = organizers_sheet[i][1]
             name = organizers_sheet[i][2]
             patronymic = organizers_sheet[i][3]
-            vk_link = organizers_sheet[i][4]
+            vk_link = make_domain(organizers_sheet[i][4])
             groups = organizers_sheet[i][5]
 
             session.add(
@@ -166,7 +167,7 @@ def get_init_data(
     existing_guests = session.query(Guests).all()
 
     for i in range(1, len(guests_sheet)):
-        vk_link = guests_sheet[i][6]
+        vk_link = make_domain(guests_sheet[i][5])
 
         for guest in existing_guests:
 

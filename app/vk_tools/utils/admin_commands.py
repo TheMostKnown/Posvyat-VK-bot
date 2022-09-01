@@ -2,7 +2,7 @@ import json
 from typing import Optional, List
 
 import vk_api
-from sqlalchemy import desc
+from sqlalchemy import desc, asc
 from sqlalchemy.orm import Session
 
 from app.vk_events.send_message import send_message
@@ -44,7 +44,6 @@ def get_commands(
     if params and 'quantity' in params.keys() and params['quantity'] < len(commands):
         # commands = sorted(commands, key=lambda i: i['date'], reverse=True)[:params['quantity']]
         commands = commands[:params['quantity']]
-    commands = sorted(commands, key=lambda command: command['name'])
 
     message_texts = []
     if not commands:
@@ -102,8 +101,7 @@ def get_mailings(
     } for text in session.query(Sendings).all()]
 
     if params and 'quantity' in params.keys() and params['quantity'] < len(texts):
-        texts = sorted(texts, key=lambda text: text['send_time'], reverse=True)[:params['quantity']]
-    texts = sorted(texts, key=lambda text: text['mail_name'])
+        texts = texts[:params['quantity']]
 
     message_texts = []
     if not texts:
@@ -185,23 +183,28 @@ def get_guests(
 
     params = {}
     if args:
-        if not args[0].isdigit():
-            return 9
-        params['quantity'] = int(args[0])
+        if args[0].isdigit():
+            params['quantity'] = int(args[0])
+        if len(args) == 2 and args[0].isdigit():
+            params['group'] = int(args[1])
 
-    users = session.query(Guests).filter(Guests.chat_id != chat_id)
+    users = session.query(Guests)
     if params and 'quantity' in params.keys() and params['quantity'] < users.count():
-        users = users.order_by(desc(Guests.surname)).limit(params['quantity'])
+        users = users.order_by(asc(Guests.surname)).limit(params['quantity'])
 
     message_texts = []
     if not users.count():
         message_text = f'Пользователей в базе нет.'
     else:
-        message_text = f'Сейчас есть информация о {users.count()} пользователях:\n\n'
+        message_text = f'Сейчас есть информация об этих пользователях:\n\n'
 
         titles = {text.id: text.mail_name for text in session.query(Sendings)}
 
         for i, user in enumerate(users):
+
+            if params and 'group' in params.keys() and params['group'] not in json.loads(user.groups):
+                continue
+
             if i and i % 5 == 0:
                 message_texts.append(message_text)
                 message_text = ''
@@ -250,23 +253,26 @@ def get_orgs(
 
     params = {}
     if args:
-        if not args[0].isdigit():
-            return 9
-        params['quantity'] = int(args[0])
+        if args[0].isdigit():
+            params['quantity'] = int(args[0])
+        if len(args) == 2 and args[1].isdigit():
+            params['group'] = int(args[1])
 
     users = session.query(Orgs)
     if params and 'quantity' in params.keys() and params['quantity'] < users.count():
-        users = users.order_by(desc(Orgs.surname)).limit(params['quantity'])
+        users = users.order_by(asc(Orgs.surname)).limit(params['quantity'])
 
     message_texts = []
     if not users.count():
         message_text = f'Пользователей в базе нет.'
     else:
-        message_text = f'Сейчас есть информация о {users.count()} пользователях:\n\n'
-
-        groups = {group.group_num: group.group_info for group in session.query(Groups)}
+        message_text = f'Сейчас есть информация о пользователях:\n\n'
 
         for i, user in enumerate(users):
+
+            if params and 'group' in params.keys() and params['group'] not in json.loads(user.groups):
+                continue
+
             if i and i % 5 == 0:
                 message_texts.append(message_text)
                 message_text = ''
@@ -315,7 +321,7 @@ def get_groups(
     } for group in session.query(Groups).all()]
 
     if params and 'quantity' in params.keys() and params['quantity'] < len(groups):
-        groups = sorted(groups, key=lambda group: group['group_num'], reverse=True)[:params['quantity']]
+        groups = sorted(groups, key=lambda group: group['group_num'])[:params['quantity']]
     groups = sorted(groups, key=lambda group: group['group_num'])
 
     message_texts = []

@@ -28,7 +28,7 @@ def messages(
     if not args:
         return 1
 
-    text = session.query(Sendings).filter_by(mail_name='paying').first()
+    text = session.query(Sendings).filter_by(mail_name=args[0]).first()
     if not text:
         return 2
     if not text.text:
@@ -86,7 +86,7 @@ def messages_by_domain(
     if not args:
         return 1
 
-    domains = json.dumps(f'[{args[0]}]')
+    domains = json.loads(f'[{args[0]}]')
     text = args[1]
 
     for domain in domains:
