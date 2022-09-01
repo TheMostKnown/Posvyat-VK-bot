@@ -5,7 +5,7 @@ import vk_api.vk_api
 from sqlalchemy.orm import Session
 
 from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
-from app.create_db import Sendings, Orgs, Groups, Command, Guests
+from app.create_db import Sendings, Orgs, Groups, Command, Guests, UpdateTimer
 from app.vk_tools.utils.make_domain import make_domain
 from app.vk_tools.utils.upload import upload_photo, upload_pdf_doc
 
@@ -29,6 +29,18 @@ def get_init_data(
         creds_file_name,
         token_file_name
     )
+
+    # getting autoparser timer
+    timer_sheet = spreadsheet['Timer']
+
+    timer = session.query(UpdateTimer).first()
+
+    if timer:
+        timer.update_timer = int(timer_sheet[0][0])
+    else:
+        session.add(
+            UpdateTimer(update_timer=int(timer_sheet[0][0]))
+        )
 
     # getting info about guests' groups
     groups_sheet = spreadsheet['Levels']

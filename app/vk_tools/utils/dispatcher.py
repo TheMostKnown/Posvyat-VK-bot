@@ -61,11 +61,8 @@ def call_admin_command(
             args=args
         )
 
-    elif command == '/set_level':
-        admin_commands.set_level(
-            session=session,
-            args=args
-        )
+    elif command == '/update_timer':
+        admin_commands.update_timer(args=args)
 
     elif command == '/start_mailing':
         start_mailing(

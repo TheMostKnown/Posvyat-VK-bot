@@ -8,24 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.vk_events.send_message import send_message
 from app.vk_tools.admin_handler import admin_add_info
-from app.create_db import Guests, Orgs, Groups, Sendings, Command
-
-
-autoparser_timings = {
-    '1': 30,
-    '2': 30,
-    '3': 30,
-    '4': 1,
-    '5': 30,
-    '6': 30,
-    '7': 30,
-    '8': 30,
-    '9': 30,
-    '10': 30,
-    '11': 30,
-    '12': 30,
-    '13': 30
-}
+from app.create_db import Guests, Orgs, Groups, Sendings, Command, UpdateTimer
 
 
 # args = [quantity]
@@ -148,16 +131,24 @@ def get_mailings(
 
 
 # args = [{Groups.number}]
-def set_level(args: Optional[List[str]] = None) -> int:
+def update_timer(
+        session: Session,
+        args: Optional[List[str]] = None
+) -> None:
     """ The function of updating of autoparser's timing.
 
+        :param session: session to connect to the database
         :param args: arguments of the command entered
 
-        :return: time or 0
-        """
-    if args and args[0].isdigit():
-        return autoparser_timings[args[0]]
-    return 0
+        :return: None
+    """
+    timer = session.query(UpdateTimer).first()
+
+    if args and args[0].isnumeric():
+        if timer:
+            timer.update_timer = args[0]
+        else:
+            session.add(UpdateTimer(update_timer=int(args[0])))
 
 
 # args = [quantity | Groups.group_num]
@@ -355,3 +346,4 @@ def info(
         send_message(vk, chat_id, "Вопрос добавлен")
     else:
         send_message(vk, chat_id, "Не удалось добавить вопрос")
+        
