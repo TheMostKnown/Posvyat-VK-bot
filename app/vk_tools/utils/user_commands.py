@@ -53,13 +53,12 @@ def get_information(
     :return: error number or 0
     """ 
 
-    available_info = dict() 
-    for i in session.query(Info).all():
-        available_info[i.question] = i.answer
+    # available_info = dict() 
+    # for i in session.query(Info).all():
+    #     available_info[i.question] = i.answer
 
-    questions = list(available_info.keys())
-
-    logger.info(f'Inside Info, availiable info: {available_info}')
+    # questions = list(available_info.keys())
+    questions = [information.question for information in session.query(Info).all()]
     
     send_message(
             vk=vk,
@@ -68,25 +67,50 @@ def get_information(
             keyboard=user_keyboard.info_keyboard(questions)
 
         )
+    return 0
 
-    for info_event in VkBotLongPoll(vk=vk_session, group_id=settings.VK_GROUP_ID, wait=25).listen():
-        logger.info("inside Info listen")
-        logger.info(f"Inside Info listen question: {info_event.message['text']}")
-        if info_event.type == VkBotEventType.MESSAGE_NEW and info_event.from_user:
+    # for info_event in VkBotLongPoll(vk=vk_session, group_id=settings.VK_GROUP_ID, wait=25).listen():
+    #     logger.info("inside Info listen")
+    #     logger.info(f"Inside Info listen question: {info_event.message['text']}")
+    #     if info_event.type == VkBotEventType.MESSAGE_NEW and info_event.from_user:
 
-            info_text = info_event.message['text']
-            info_chat_id = int(info_event.message['from_id'])
+    #         info_text = info_event.message['text']
+    #         info_chat_id = int(info_event.message['from_id'])
     
 
-            if info_text in questions:
-                respond = available_info[info_text]
-                send_message(
-                    vk=vk,
-                    chat_id=info_chat_id,
-                    text=respond,
-                    keyboard=user_keyboard.info_keyboard(questions)
-                )
-            return 0
+    #         if info_text in questions:
+    #             respond = available_info[info_text]
+    #             send_message(
+    #                 vk=vk,
+    #                 chat_id=info_chat_id,
+    #                 text=respond,
+    #                 keyboard=user_keyboard.info_keyboard(questions)
+    #             )
+    #         return 0
+
+def send_answer(
+        vk: vk_api.vk_api.VkApiMethod,
+        chat_id: int,
+        session: Session,
+        event: Optional[VkBotEvent] = None,
+) -> int:
+    """ The function for sending answer to buttons
+
+    :param vk: session for connecting to VK API
+    :param chat_id: user id for sending message
+    :param session: session to connect to the database
+    :param event: event object in VK
+
+    :return: error number or 0
+    """ 
+    reply = session.query(Info.answer).filter(Info.question==event.message['text']).first()[0]
+    send_message(
+            vk=vk,
+            chat_id=chat_id,
+            text=reply
+        )
+    return 0
+
     
 
 def what_missed(

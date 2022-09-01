@@ -9,6 +9,7 @@ from app.vk_tools.utils import admin_commands, user_commands
 from app.vk_events.send_message import send_message
 from app.vk_events.mailing import messages as start_mailing, messages_by_domain as start_mailing_by_domain
 from app.vk_events.issues import open_issues
+from app.create_db import Info
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +104,7 @@ def call_guest_command(
         text: str
 ) -> None:
     logger.info(f'Inside call_guest, resieved message "{text}"')
-    if text == 'информация':
+    if text.lower() == 'информация':
         user_commands.get_information(
             vk=vk,
             vk_session=vk_session,
@@ -112,7 +113,7 @@ def call_guest_command(
             event=event
         )
             
-    elif text == 'что пропустил?':
+    elif text.lower() == 'что пропустил?':
         user_commands.what_missed(
             vk=vk,
             chat_id=chat_id,
@@ -120,10 +121,17 @@ def call_guest_command(
             event=event
         )
         
-    elif text == 'техподдержка':
+    elif text.lower() == 'техподдержка':
         user_commands.tech_support(
             vk=vk,
             vk_session=vk_session,
+            chat_id=chat_id,
+            session=session,
+            event=event
+        )
+    elif text in [information.question for information in session.query(Info).all()]:
+        user_commands.send_answer(
+            vk=vk,
             chat_id=chat_id,
             session=session,
             event=event

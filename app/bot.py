@@ -124,7 +124,7 @@ def start():
                             session=session,
                             chat_id=chat_id,
                             event=event,
-                            text=event.message['text'].lower()
+                            text=event.message['text']
                         )
 
         except Exception as e:
