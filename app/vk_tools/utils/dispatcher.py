@@ -61,8 +61,8 @@ def call_admin_command(
             args=args
         )
 
-    elif command == '/give_level':
-        admin_commands.give_level(
+    elif command == '/set_level':
+        admin_commands.set_level(
             session=session,
             args=args
         )

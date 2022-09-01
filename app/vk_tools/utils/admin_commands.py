@@ -1,5 +1,6 @@
 import json
 from typing import Optional, List
+from enum import Enum
 
 import vk_api
 from sqlalchemy import desc, asc
@@ -8,7 +9,23 @@ from sqlalchemy.orm import Session
 from app.vk_events.send_message import send_message
 from app.vk_tools.admin_handler import admin_add_info
 from app.create_db import Guests, Orgs, Groups, Sendings, Command
-from app.vk_tools.utils.make_domain import make_domain
+
+
+autoparser_timings = {
+    '1': 30,
+    '2': 30,
+    '3': 30,
+    '4': 1,
+    '5': 30,
+    '6': 30,
+    '7': 30,
+    '8': 30,
+    '9': 30,
+    '10': 30,
+    '11': 30,
+    '12': 30,
+    '13': 30
+}
 
 
 # args = [quantity]
@@ -130,37 +147,16 @@ def get_mailings(
     return 0
 
 
-# args = [{Guests.vk_link}, {Groups.number}]
-def give_level(
-        session: Session,
-        args: Optional[List[str]] = None
-) -> int:
-    """ The function of updating a group from the Guest table in DB.
+# args = [{Groups.number}]
+def set_level(args: Optional[List[str]] = None) -> int:
+    """ The function of updating of autoparser's timing.
 
-        :param vk: session for connecting to VK API
-        :param session: session to connect to the database
-        :param event: event object in VK
         :param args: arguments of the command entered
 
-        :return: error number or 0
+        :return: time or 0
         """
-    if len(args) < 2 or not args[0] or not args[1]:
-        return 1
-
-    user = session.query(Guests).filter_by(vk_link=args[0]).first()
-    if not user:
-        return 5
-
-    if args[1].isdigit():
-        if int(args[1]) not in {group.group_num for group in session.query(Groups)}:
-            return 4
-
-        user_groups = json.loads(user.groups)
-        user_groups.append(int(args[1]))
-
-        user.groups = json.dumps(user_groups)
-
-    session.commit()
+    if args and args[0].isdigit():
+        return autoparser_timings[args[0]]
     return 0
 
 
