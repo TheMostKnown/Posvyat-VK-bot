@@ -78,7 +78,7 @@ def get_init_data(
         if name not in existing_sengings:
 
             text = sendings_sheet[i][1]
-            groups_str = sendings_sheet[i][2]
+            groups = sendings_sheet[i][2]
             send_time = sendings_sheet[i][3]
             pics = sendings_sheet[i][4]
             video = sendings_sheet[i][5]
@@ -117,18 +117,11 @@ def get_init_data(
 
             logger.info(f'Docs: {doc_ids}')
 
-            if groups_str[0] != '!':
-                groups_json = f'[{groups_str}]'
-            else:
-                unwanted_groups = json.loads(f'[{groups_str[1:]}]')
-                groups = session.query(Groups).filter(Groups.id not in unwanted_groups).all()
-                groups_json = json.dumps(groups)
-
             session.add(
                 Sendings(
                     mail_name=name,
                     send_time=send_time,
-                    groups=groups_json,
+                    groups=groups,
                     text=text,
                     pics=json.dumps(pic_ids) if len(pic_ids) > 0 else '[]',
                     video=f'[{video}]' if video else '[]',

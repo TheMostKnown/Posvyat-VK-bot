@@ -41,28 +41,52 @@ def messages(
     text_docs = json.loads(text.docs)
 
     for user in session.query(Guests).all():
-        user_groups = json.loads(user.groups)
         user_texts = json.loads(user.texts)
         intersection = []
 
-        for elem in user_groups:
-            if elem in text_groups:
-                intersection.append(elem)
+        if user.groups[0] != '!':
+            user_groups = f'[{user.groups}]'
 
-        if intersection == text_groups and text.id not in user_texts:
-            send_message(
-                vk=vk,
-                chat_id=user.chat_id,
-                text=text.text,
-                attachments=[
-                    *text_pics,
-                    *text_video,
-                    *text_reposts,
-                    *text_docs
-                ]
-            )
-            user_texts.append(text.id)
-            user.texts = json.dumps(user_texts)
+            for elem in user_groups:
+                if elem in text_groups:
+                    intersection.append(elem)
+
+            if intersection == text_groups and text.id not in user_texts:
+                send_message(
+                    vk=vk,
+                    chat_id=user.chat_id,
+                    text=text.text,
+                    attachments=[
+                        *text_pics,
+                        *text_video,
+                        *text_reposts,
+                        *text_docs
+                    ]
+                )
+                user_texts.append(text.id)
+                user.texts = json.dumps(user_texts)
+
+        else:
+            user_groups = json.loads(f'[{user.groups[1:]}]')
+
+            for elem in user_groups:
+                if elem in text_groups:
+                    intersection.append(elem)
+
+            if len(intersection) == 0 and text.id not in user_texts:
+                send_message(
+                    vk=vk,
+                    chat_id=user.chat_id,
+                    text=text.text,
+                    attachments=[
+                        *text_pics,
+                        *text_video,
+                        *text_reposts,
+                        *text_docs
+                    ]
+                )
+                user_texts.append(text.id)
+                user.texts = json.dumps(user_texts)
 
     session.commit()
     return 0
