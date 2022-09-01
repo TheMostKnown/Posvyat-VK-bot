@@ -137,11 +137,24 @@ def what_missed(
     missing = []
 
     for elem in session.query(Sendings):
-        sending_groups = json.loads(elem.groups)
-        #проверка входят ли уровни рассылки в уровни пользователя
-        if set(sending_groups).issubset(user_groups):
-            if not elem.id in user_texts:
+
+        if elem.groups[0] != '!':
+            sending_groups = json.loads(f'[{elem.groups}]')
+            #проверка входят ли уровни рассылки в уровни пользователя
+            if set(sending_groups).issubset(user_groups):
+                if not elem.id in user_texts:
+                    missing.append(elem.id)
+        else:
+            not_sending_groups = json.loads(f'[{elem.groups[1:]}]')
+            #проверка чтобы не входило в уровни пользователя
+            intersection = []
+            for elem in user_groups:
+                if elem in not_sending_groups:
+                    intersection.append(elem)
+            if len(intersection) == 0 and not elem.id in user_texts:
                 missing.append(elem.id)
+
+
     if len(missing) == 0:
         send_message(vk, chat_id, "У вас нет пропущенных рассылок.")
         return 0

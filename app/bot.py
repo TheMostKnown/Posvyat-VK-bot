@@ -60,6 +60,8 @@ def start():
                         user_groups = json.dumps([1, 2]) \
                             if vk.groups.isMember(group_id=settings.VK_GROUP_ID, user_id=chat_id) == 1 \
                             else json.dumps([1])
+                        
+                        welcome_text = session.query(Sendings).filter_by(mail_name='welcome').first()
 
                         session.add(
                             Guests(
@@ -71,7 +73,7 @@ def start():
                                 tag='',
                                 vk_link=user_info['domain'],
                                 groups=user_groups,
-                                texts=json.dumps([])
+                                texts=json.dumps([welcome_text.id] if welcome_text else [])
                             )
                         )
                         logger.info(
