@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
 from app.create_db import Sendings, Orgs, Groups, Command, Guests, Info
+from app.vk_tools.utils.make_domain import make_domain
 from app.vk_tools.utils.upload import upload_photo, upload_pdf_doc
 
 
@@ -77,7 +78,7 @@ def get_init_data(
         if name not in existing_sengings:
 
             text = sendings_sheet[i][1]
-            groups_str = sendings_sheet[i][2]
+            groups = sendings_sheet[i][2]
             send_time = sendings_sheet[i][3]
             pics = sendings_sheet[i][4]
             video = sendings_sheet[i][5]
@@ -116,18 +117,11 @@ def get_init_data(
 
             logger.info(f'Docs: {doc_ids}')
 
-            if groups_str[0] != '!':
-                groups_json = f'[{groups_str}]'
-            else:
-                unwanted_groups = json.loads(f'[{groups_str[1:]}]')
-                groups = session.query(Groups).filter(Groups.id not in unwanted_groups).all()
-                groups_json = json.dumps(groups)
-
             session.add(
                 Sendings(
                     mail_name=name,
                     send_time=send_time,
-                    groups=groups_json,
+                    groups=groups,
                     text=text,
                     pics=json.dumps(pic_ids) if len(pic_ids) > 0 else '[]',
                     video=f'[{video}]' if video else '[]',
@@ -147,7 +141,7 @@ def get_init_data(
             surname = organizers_sheet[i][1]
             name = organizers_sheet[i][2]
             patronymic = organizers_sheet[i][3]
-            vk_link = organizers_sheet[i][4]
+            vk_link = make_domain(organizers_sheet[i][4])
             groups = organizers_sheet[i][5]
 
             session.add(
@@ -166,7 +160,7 @@ def get_init_data(
     existing_guests = session.query(Guests).all()
 
     for i in range(1, len(guests_sheet)):
-        vk_link = guests_sheet[i][6]
+        vk_link = make_domain(guests_sheet[i][5])
 
         for guest in existing_guests:
 
