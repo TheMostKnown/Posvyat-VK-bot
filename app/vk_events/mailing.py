@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Optional, List
 
 import vk_api
@@ -8,6 +9,12 @@ from app.config import settings
 from app.create_db import Sendings, Guests, Groups
 from app.vk_events.send_message import send_message
 from app.vk_tools.utils.upload import upload_photo
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 
 # args = [Sendings.mail_name]
@@ -34,7 +41,6 @@ def messages(
     if not text.text:
         return 10
 
-    text_groups = json.loads(text.groups)
     text_pics = json.loads(text.pics)
     text_video = json.loads(text.video)
     text_reposts = json.loads(text.reposts)
@@ -42,10 +48,11 @@ def messages(
 
     for user in session.query(Guests).all():
         user_texts = json.loads(user.texts)
+        user_groups = json.loads(user.groups)
         intersection = []
 
-        if user.groups[0] != '!':
-            user_groups = f'[{user.groups}]'
+        if text.groups[0] != '!':
+            text_groups = json.loads(f'[{text.groups}]')
 
             for elem in user_groups:
                 if elem in text_groups:
@@ -67,7 +74,7 @@ def messages(
                 user.texts = json.dumps(user_texts)
 
         else:
-            user_groups = json.loads(f'[{user.groups[1:]}]')
+            text_groups = json.loads(f'[{text.groups[1:]}]')
 
             for elem in user_groups:
                 if elem in text_groups:
