@@ -99,6 +99,13 @@ class Command(database):
     admin = Column(Boolean)
 
 
+# Таблица с уведомлениями о повышении уровня
+class Notifications(database):
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    group_num = Column(Integer)
+    desc = Column(String)
+
+
 # Создание таблиц
 def create_tables(engine: Engine) -> None:
     database.metadata.create_all(engine)

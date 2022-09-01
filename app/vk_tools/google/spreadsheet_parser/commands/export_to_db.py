@@ -5,9 +5,10 @@ import vk_api.vk_api
 from sqlalchemy.orm import Session
 
 from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
-from app.create_db import Sendings, Orgs, Groups, Command, Guests, UpdateTimer
+from app.create_db import Sendings, Orgs, Groups, Command, Guests, UpdateTimer, Notifications
 from app.vk_tools.utils.make_domain import make_domain
 from app.vk_tools.utils.upload import upload_photo, upload_pdf_doc
+from app.vk_events.send_message import send_message
 
 
 def get_init_data(
@@ -41,6 +42,25 @@ def get_init_data(
         session.add(
             UpdateTimer(update_timer=int(timer_sheet[0][0]))
         )
+
+    # getting info about notifications
+    notification_sheet = spreadsheet['Notifications']
+
+    for i in range(1, len(notification_sheet)):
+        group_num = int(notification_sheet[i][0])
+        desc = notification_sheet[i][1]
+
+        notification = session.query(Notifications).filter_by(group_num=group_num).first()
+
+        if notification:
+            notification.desc = desc
+        else:
+            session.add(
+                Notifications(
+                    group_num=group_num,
+                    desc=desc
+                )
+            )
 
     # getting info about guests' groups
     groups_sheet = spreadsheet['Levels']
@@ -207,9 +227,25 @@ def get_init_data(
             guest.tag = tag
 
             groups = json.loads(f'[{guests_sheet[i][6]}]') if guests_sheet[i][6] else None
-            guest_groups = json.loads(guest.groups)
+            existing_groups = json.loads(guest.groups)
 
-            if groups and len(groups) > len(guest_groups):
+            text = ''
+
+            if groups and len(groups) > len(existing_groups):
                 guest.groups = f'[{guests_sheet[i][6]}]'
+
+                for group in groups:
+                    if group not in existing_groups:
+                        info = session.query(Notifications).filter_by(group_num=int(group)).first()
+
+                        if info:
+                            text += f'{info.desc}\n'
+
+                if len(text) != 0:
+                    send_message(
+                        vk=vk,
+                        chat_id=guest.chat_id,
+                        text=text
+                    )
 
     session.commit()

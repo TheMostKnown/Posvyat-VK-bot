@@ -46,7 +46,7 @@ def perform_parsing(
         creds_file_name=creds_file_name,
         token_file_name=token_file_name
     )
-    update_timer(session),
+    update_timer(session)
     logger.info('AutoParser has started')
 
 
