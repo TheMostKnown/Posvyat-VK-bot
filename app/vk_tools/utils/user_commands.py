@@ -148,8 +148,25 @@ def what_missed(
 
     send_message(vk, chat_id, "Пропущенные рассылки: ")
     for item in missing:
-        sending = session.query(Sendings.text).filter(Sendings.id==item).first()[0]
-        send_message(vk, chat_id, sending)
+        sending = session.query(Sendings).filter(Sendings.id==item).first()
+
+        sending_text = sending.text
+        sending_pics = json.loads(sending.pics)
+        sending_video = json.loads(sending.video)
+        sending_reposts = json.loads(sending.reposts)
+        sending_docs = json.loads(sending.docs)
+
+        send_message(
+                vk=vk,
+                chat_id=chat_id,
+                text=sending_text,
+                attachments=[
+                    *sending_pics,
+                    *sending_video,
+                    *sending_reposts,
+                    *sending_docs
+                ]
+            )
         
         user_texts.append(item)
     user.texts = json.dumps(user_texts)
