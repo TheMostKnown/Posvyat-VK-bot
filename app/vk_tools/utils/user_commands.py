@@ -148,9 +148,9 @@ def what_missed(
             not_sending_groups = json.loads(f'[{elem.groups[1:]}]')
             #проверка чтобы не входило в уровни пользователя
             intersection = []
-            for elem in user_groups:
-                if elem in not_sending_groups:
-                    intersection.append(elem)
+            for group in user_groups:
+                if group in not_sending_groups:
+                    intersection.append(group)
             if len(intersection) == 0 and not elem.id in user_texts:
                 missing.append(elem.id)
 
