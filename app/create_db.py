@@ -101,6 +101,8 @@ class Command(database):
 
 # Таблица с уведомлениями о повышении уровня
 class Notifications(database):
+    __tablename__ = 'notifications'
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     group_num = Column(Integer)
     desc = Column(String)

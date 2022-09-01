@@ -1,6 +1,6 @@
 import json
 from typing import Optional, List
-from enum import Enum
+import logging
 
 import vk_api
 from sqlalchemy import desc, asc
@@ -9,6 +9,14 @@ from sqlalchemy.orm import Session
 from app.vk_events.send_message import send_message
 from app.vk_tools.admin_handler import admin_add_info
 from app.create_db import Guests, Orgs, Groups, Sendings, Command, UpdateTimer
+from app.vk_tools.google.spreadsheet_parser.commands.export_to_db import get_init_data
+
+# Подключение логов
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 
 # args = [quantity]
@@ -333,6 +341,24 @@ def get_groups(
 
     session.commit()
     return 0
+
+
+def restart_parser(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        spreadsheet_id: str,
+        creds_file_name: str,
+        token_file_name: str
+) -> None:
+    get_init_data(
+        vk=vk,
+        session=session,
+        spreadsheet_id=spreadsheet_id,
+        creds_file_name=creds_file_name,
+        token_file_name=token_file_name
+    )
+    update_timer(session)
+    logger.info('Parser has restarted')
 
 
 def info(

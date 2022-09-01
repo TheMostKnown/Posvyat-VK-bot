@@ -234,6 +234,7 @@ def get_init_data(
             if groups and len(groups) > len(existing_groups):
                 guest.groups = f'[{guests_sheet[i][6]}]'
 
+                # если есть новые группы -> нужно отправить уведомление об этом
                 for group in groups:
                     if group not in existing_groups:
                         info = session.query(Notifications).filter_by(group_num=int(group)).first()
