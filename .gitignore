@@ -130,3 +130,5 @@ dmypy.json
 
 #config bot file
 app/vk_config.py
+creds.json
+token.json

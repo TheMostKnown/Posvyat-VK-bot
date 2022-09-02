@@ -19,8 +19,11 @@ class Keyboard:
         self.keyboard = VkKeyboard(self.one_time, self.inline)
     
     def get(self):
-        for button in self.buttons:
+        for count, button in enumerate(self.buttons):
             self.keyboard.add_button(button)
+            if count%4 == 0:
+                self.keyboard.add_line()
+
         return self.keyboard
     
 

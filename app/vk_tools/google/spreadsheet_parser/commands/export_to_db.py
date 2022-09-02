@@ -5,7 +5,7 @@ import vk_api.vk_api
 from sqlalchemy.orm import Session
 
 from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
-from app.create_db import Sendings, Orgs, Groups, Command, Guests, UpdateTimer, Notifications
+from app.create_db import Sendings, Orgs, Groups, Command, Guests, Info, UpdateTimer, Notifications
 from app.vk_tools.utils.make_domain import make_domain
 from app.vk_tools.utils.upload import upload_photo, upload_pdf_doc
 from app.vk_events.send_message import send_message
@@ -248,5 +248,23 @@ def get_init_data(
                         chat_id=guest.chat_id,
                         text=text
                     )
+
+    info_sheet = spreadsheet['Info']
+    existing_info = [information.question for information in session.query(Info).all()]
+
+    for i in range (1, len(info_sheet)):
+
+        info_question = info_sheet[i][0]
+
+        if info_question not in existing_info:
+            info_answer = info_sheet[i][1]
+
+            session.add(
+                Info(
+                    question=info_question,
+                    answer=info_answer
+                )
+            )
+
 
     session.commit()

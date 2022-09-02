@@ -8,7 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.vk_events.send_message import send_message
 from app.vk_tools.admin_handler import admin_add_info
-from app.create_db import Guests, Orgs, Groups, Sendings, Command, UpdateTimer
+from app.create_db import Guests, Orgs, Groups, Sendings, Command, TechSupport, UpdateTimer
+from app.vk_tools.utils.make_domain import make_domain
 from app.vk_tools.google.spreadsheet_parser.commands.export_to_db import get_init_data
 
 # Подключение логов
@@ -342,6 +343,31 @@ def get_groups(
     session.commit()
     return 0
 
+def close_tech(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        chat_id: int,
+        args: Optional[List[str]] = None
+) -> int:
+    """ The function of closing tech_support issues by user domains.
+
+        :param vk: session for connecting to VK API
+        :param session: session to connect to the database
+        :param args: arguments of the command entered
+
+        :return: error number or 0
+    """
+
+    if not args:
+        return 1
+    domains = json.loads(f'[{args[0]}]')
+    for domain in domains:
+        for issue in session.query(TechSupport).filter(TechSupport.vk_link==str(domain)).all():
+                issue.status='closed'
+                send_message(vk, chat_id, f'Закрыт вопрос "{issue.per_question}" от пользователя vk.com/{issue.vk_link}')
+            
+    session.commit()
+    return 0
 
 def restart_parser(
         vk: vk_api.vk_api.VkApiMethod,
