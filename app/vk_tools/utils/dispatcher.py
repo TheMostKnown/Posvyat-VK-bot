@@ -9,6 +9,8 @@ from app.vk_tools.utils import admin_commands, user_commands
 from app.vk_events.send_message import send_message
 from app.vk_events.mailing import messages as start_mailing, messages_by_domain as start_mailing_by_domain
 from app.vk_events.issues import open_issues
+from app.vk_tools.utils.admin_commands import restart_parser
+from app.config import settings
 from app.create_db import Info
 
 logger = logging.getLogger(__name__)
@@ -64,11 +66,8 @@ def call_admin_command(
             args=args
         )
 
-    elif command == '/give_level':
-        admin_commands.give_level(
-            session=session,
-            args=args
-        )
+    elif command == '/update_timer':
+        admin_commands.update_timer(args=args)
 
     elif command == '/start_mailing':
         start_mailing(
@@ -86,6 +85,14 @@ def call_admin_command(
             session=session,
             args=args
         )
+
+    elif command == '/restart_parser':
+        restart_parser(
+            vk=vk,
+            session=session,
+            spreadsheet_id=settings.GOOGLE_TABLE_ID,
+            creds_file_name=settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
+            token_file_name=settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH
 
     elif command =='/close_tech':
         admin_commands.close_tech(

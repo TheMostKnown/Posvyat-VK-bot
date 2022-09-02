@@ -63,6 +63,8 @@ def start():
                         
                         welcome_text = session.query(Sendings).filter_by(mail_name='welcome').first()
 
+                        welcome_text = session.query(Sendings).filter_by(mail_name='welcome').first()
+
                         session.add(
                             Guests(
                                 chat_id=chat_id,
@@ -81,8 +83,6 @@ def start():
                             f'chat_id="{chat_id}", '
                             f'link=vk.com/{user_info["domain"]}'
                         )
-
-                        welcome_text = session.query(Sendings).filter_by(mail_name='welcome').first()
 
                         if welcome_text:
                             send_message(

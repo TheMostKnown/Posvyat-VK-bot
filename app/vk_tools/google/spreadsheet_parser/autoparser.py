@@ -1,59 +1,57 @@
+import logging
+
 import schedule
+import vk_api.vk_api
 from sqlalchemy.orm import Session
 
-from app.create_db import Guests
-from spreadsheet_parser import get_data
+from app.create_db import UpdateTimer
+from app.vk_tools.google.spreadsheet_parser.commands.export_to_db import get_init_data
+
+# Подключение логов
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 # interval between spreadsheet check
-PARSER_SLEEP_TIME = 30
-
-
-def add_info_to_db(
-        session: Session,
-        spreadsheet_id: str,
-        creds_file_name: str,
-        token_file_name: str,
-) -> None:
-    table = get_data(spreadsheet_id, creds_file_name, token_file_name)
-
-    for row in table:
-        guest = session.query(Guests).filter_by(surname=row[0]).first()
-
-        if guest:
-            guest.chat_id = row[0]
-            guest.surname = row[1]
-            guest.name = row[2]
-            guest.patronymic = row[3]
-            guest.phone_number = row[4]
-            guest.tag = row[5]
-            guest.vk_link = row[6]
-            guest.groups = f'[{row[7]}]'
-        else:
-            session.add(Guests(
-                chat_id=row[0],
-                surname=row[1],
-                name=row[2],
-                patronymic=row[3],
-                phone_number=row[4],
-                tag=row[5],
-                vk_link=row[6],
-                groups=f'[{row[7]}]'
-            ))
-
-        session.commit()
+PARSER_SLEEP_TIME = 1
 
 
 def start_auto_parsing(
+        vk: vk_api.vk_api.VkApiMethod,
         session: Session,
         spreadsheet_id: str,
         creds_file_name: str,
         token_file_name: str,
 ) -> None:
+
     schedule.every(PARSER_SLEEP_TIME).minutes.do(
-        add_info_to_db(
-            session=session,
-            spreadsheet_id=spreadsheet_id,
-            creds_file_name=creds_file_name,
-            token_file_name=token_file_name
-        )
+        perform_parsing,
+        *(vk, session, spreadsheet_id, creds_file_name, token_file_name)
     )
+
+
+def perform_parsing(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        spreadsheet_id: str,
+        creds_file_name: str,
+        token_file_name: str
+) -> None:
+    get_init_data(
+        vk=vk,
+        session=session,
+        spreadsheet_id=spreadsheet_id,
+        creds_file_name=creds_file_name,
+        token_file_name=token_file_name
+    )
+    update_timer(session)
+    logger.info('AutoParser has started')
+
+
+def update_timer(session: Session) -> None:
+    timer = session.query(UpdateTimer).first()
+
+    if timer:
+        PARSER_SLEEP_TIME = timer.update_timer

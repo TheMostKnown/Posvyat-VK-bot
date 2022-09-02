@@ -1,5 +1,6 @@
 import json
 from typing import Optional, List
+import logging
 
 import vk_api
 from sqlalchemy import desc, asc
@@ -7,8 +8,16 @@ from sqlalchemy.orm import Session
 
 from app.vk_events.send_message import send_message
 from app.vk_tools.admin_handler import admin_add_info
-from app.create_db import Guests, Orgs, Groups, Sendings, Command, TechSupport
+from app.create_db import Guests, Orgs, Groups, Sendings, Command, TechSupport, UpdateTimer
 from app.vk_tools.utils.make_domain import make_domain
+from app.vk_tools.google.spreadsheet_parser.commands.export_to_db import get_init_data
+
+# Подключение логов
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 
 # args = [quantity]
@@ -130,38 +139,25 @@ def get_mailings(
     return 0
 
 
-# args = [{Guests.vk_link}, {Groups.number}]
-def give_level(
+# args = [{Groups.number}]
+def update_timer(
         session: Session,
         args: Optional[List[str]] = None
-) -> int:
-    """ The function of updating a group from the Guest table in DB.
+) -> None:
+    """ The function of updating of autoparser's timing.
 
-        :param vk: session for connecting to VK API
         :param session: session to connect to the database
-        :param event: event object in VK
         :param args: arguments of the command entered
 
-        :return: error number or 0
-        """
-    if len(args) < 2 or not args[0] or not args[1]:
-        return 1
+        :return: None
+    """
+    timer = session.query(UpdateTimer).first()
 
-    user = session.query(Guests).filter_by(vk_link=args[0]).first()
-    if not user:
-        return 5
-
-    if args[1].isdigit():
-        if int(args[1]) not in {group.group_num for group in session.query(Groups)}:
-            return 4
-
-        user_groups = json.loads(user.groups)
-        user_groups.append(int(args[1]))
-
-        user.groups = json.dumps(user_groups)
-
-    session.commit()
-    return 0
+    if args and args[0].isnumeric():
+        if timer:
+            timer.update_timer = args[0]
+        else:
+            session.add(UpdateTimer(update_timer=int(args[0])))
 
 
 # args = [quantity | Groups.group_num]
@@ -373,6 +369,24 @@ def close_tech(
     session.commit()
     return 0
 
+def restart_parser(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        spreadsheet_id: str,
+        creds_file_name: str,
+        token_file_name: str
+) -> None:
+    get_init_data(
+        vk=vk,
+        session=session,
+        spreadsheet_id=spreadsheet_id,
+        creds_file_name=creds_file_name,
+        token_file_name=token_file_name
+    )
+    update_timer(session)
+    logger.info('Parser has restarted')
+
+
 def info(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
@@ -384,3 +398,4 @@ def info(
         send_message(vk, chat_id, "Вопрос добавлен")
     else:
         send_message(vk, chat_id, "Не удалось добавить вопрос")
+        

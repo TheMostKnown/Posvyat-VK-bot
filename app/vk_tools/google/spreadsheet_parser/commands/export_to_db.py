@@ -5,9 +5,10 @@ import vk_api.vk_api
 from sqlalchemy.orm import Session
 
 from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
-from app.create_db import Sendings, Orgs, Groups, Command, Guests, Info
+from app.create_db import Sendings, Orgs, Groups, Command, Guests, Info, UpdateTimer, Notifications
 from app.vk_tools.utils.make_domain import make_domain
 from app.vk_tools.utils.upload import upload_photo, upload_pdf_doc
+from app.vk_events.send_message import send_message
 
 
 def get_init_data(
@@ -30,16 +31,49 @@ def get_init_data(
         token_file_name
     )
 
+    # getting autoparser timer
+    timer_sheet = spreadsheet['Timer']
+
+    timer = session.query(UpdateTimer).first()
+
+    if timer:
+        timer.update_timer = int(timer_sheet[0][0])
+    else:
+        session.add(
+            UpdateTimer(update_timer=int(timer_sheet[0][0]))
+        )
+
+    # getting info about notifications
+    notification_sheet = spreadsheet['Notifications']
+
+    for i in range(1, len(notification_sheet)):
+        group_num = int(notification_sheet[i][0])
+        desc = notification_sheet[i][1]
+
+        notification = session.query(Notifications).filter_by(group_num=group_num).first()
+
+        if notification:
+            notification.desc = desc
+        else:
+            session.add(
+                Notifications(
+                    group_num=group_num,
+                    desc=desc
+                )
+            )
+
     # getting info about guests' groups
     groups_sheet = spreadsheet['Levels']
-    existing_groups = [group.group_info for group in session.query(Groups).all()]
 
     for i in range(1, len(groups_sheet)):
+        group_num = int(groups_sheet[i][0])
         group_info = groups_sheet[i][1]
 
-        if group_info not in existing_groups:
-            group_num = groups_sheet[i][0]
+        group = session.query(Groups).filter_by(group_num=group_num).first()
 
+        if group:
+            group.group_info = group_info
+        else:
             session.add(
                 Groups(
                     group_num=group_num,
@@ -49,16 +83,20 @@ def get_init_data(
 
     # getting info about commands for calling
     commands_sheet = spreadsheet['Commands']
-    existing_commands = [command.name for command in session.query(Command).all()]
 
     for i in range(1, len(commands_sheet)):
         name = commands_sheet[i][0]
+        arguments = commands_sheet[i][1]
+        desc = commands_sheet[i][2]
+        admin = True if commands_sheet[i][3] == '1' else False
 
-        if name not in existing_commands:
-            arguments = commands_sheet[i][1]
-            desc = commands_sheet[i][2]
-            admin = True if commands_sheet[i][3] == '1' else False
+        command = session.query(Command).filter_by(name=name).first()
 
+        if command:
+            command.arguments = arguments
+            command.desc = desc
+            command.admin = admin
+        else:
             session.add(
                 Command(
                     name=name,
@@ -70,53 +108,60 @@ def get_init_data(
 
     # getting info about mailings
     sendings_sheet = spreadsheet['Sendings']
-    existing_sengings = [sending.mail_name for sending in session.query(Sendings).all()]
 
     for i in range(1, len(sendings_sheet)):
         name = sendings_sheet[i][0]
+        text = sendings_sheet[i][1]
+        groups = sendings_sheet[i][2]
+        send_time = sendings_sheet[i][3]
+        pics = sendings_sheet[i][4]
+        video = sendings_sheet[i][5]
+        reposts = sendings_sheet[i][6]
+        docs = sendings_sheet[i][7]
 
-        if name not in existing_sengings:
+        pic_ids = []
+        if pics:
+            pics_json = f'[{pics}]'
 
-            text = sendings_sheet[i][1]
-            groups = sendings_sheet[i][2]
-            send_time = sendings_sheet[i][3]
-            pics = sendings_sheet[i][4]
-            video = sendings_sheet[i][5]
-            reposts = sendings_sheet[i][6]
-            docs = sendings_sheet[i][7]
+            for pic in json.loads(pics_json):
+                pic_id = upload_photo(
+                    vk=vk,
+                    photo_id=pic,
+                    image_file_path=f'./app/vk_tools/google/spreadsheet_parser/attachments/{pic}.png'
+                )
 
-            pic_ids = []
-            if pics:
-                pics_json = f'[{pics}]'
+                if len(pic_id) != 0:
+                    pic_ids.append(pic_id)
 
-                for pic in json.loads(pics_json):
-                    pic_id = upload_photo(
-                        vk=vk,
-                        photo_id=pic,
-                        image_file_path=f'./app/vk_tools/google/spreadsheet_parser/attachments/{pic}.png'
-                    )
+        logger.info(f'Pics: {pic_ids}')
 
-                    if len(pic_id) != 0:
-                        pic_ids.append(pic_id)
+        doc_ids = []
+        if docs:
+            docs_json = f'[{docs}]'
 
-            logger.info(f'Pics: {pic_ids}')
+            for doc in json.loads(docs_json):
+                doc_id = upload_pdf_doc(
+                    vk=vk,
+                    doc_id=doc,
+                    doc_file_path=f'./app/vk_tools/google/spreadsheet_parser/attachments/{doc}.pdf'
+                )
 
-            doc_ids = []
-            if docs:
-                docs_json = f'[{docs}]'
+                if len(doc_id) != 0:
+                    doc_ids.append(doc_id)
 
-                for doc in json.loads(docs_json):
-                    doc_id = upload_pdf_doc(
-                        vk=vk,
-                        doc_id=doc,
-                        doc_file_path=f'./app/vk_tools/google/spreadsheet_parser/attachments/{doc}.pdf'
-                    )
+        logger.info(f'Docs: {doc_ids}')
 
-                    if len(doc_id) != 0:
-                        doc_ids.append(doc_id)
+        sending = session.query(Sendings).filter_by(mail_name=name).first()
 
-            logger.info(f'Docs: {doc_ids}')
-
+        if sending:
+            sending.send_time = send_time
+            sending.groups = groups
+            sending.text = text
+            sending.pics = json.dumps(pic_ids) if len(pic_ids) > 0 else '[]'
+            sending.video = f'[{video}]' if video else '[]'
+            sending.reposts = f'[{reposts}]' if reposts else '[]'
+            sending.docs = json.dumps(doc_ids) if docs else '[]'
+        else:
             session.add(
                 Sendings(
                     mail_name=name,
@@ -132,18 +177,24 @@ def get_init_data(
 
     # getting info about users with admin rights
     organizers_sheet = spreadsheet['Organizers']
-    existing_organizers = [organizer.chat_id for organizer in session.query(Orgs).all()]
 
     for i in range(1, len(organizers_sheet)):
         chat_id = int(organizers_sheet[i][0])
+        surname = organizers_sheet[i][1]
+        name = organizers_sheet[i][2]
+        patronymic = organizers_sheet[i][3]
+        vk_link = make_domain(organizers_sheet[i][4])
+        groups = organizers_sheet[i][5]
 
-        if chat_id not in existing_organizers:
-            surname = organizers_sheet[i][1]
-            name = organizers_sheet[i][2]
-            patronymic = organizers_sheet[i][3]
-            vk_link = make_domain(organizers_sheet[i][4])
-            groups = organizers_sheet[i][5]
+        organizer = session.query(Orgs).filter_by(chat_id=chat_id).first()
 
+        if organizer:
+            organizer.surname = surname
+            organizer.name = name
+            organizer.patronymic = patronymic
+            organizer.vk_link = vk_link
+            organizer.groups = groups
+        else:
             session.add(
                 Orgs(
                     chat_id=chat_id,
@@ -157,25 +208,46 @@ def get_init_data(
 
     # getting info about participants
     guests_sheet = spreadsheet['Guests']
-    existing_guests = session.query(Guests).all()
 
     for i in range(1, len(guests_sheet)):
+        surname = guests_sheet[i][0]
+        name = guests_sheet[i][1]
+        patronymic = guests_sheet[i][2]
+        phone_number = guests_sheet[i][3]
+        tag = guests_sheet[i][4]
         vk_link = make_domain(guests_sheet[i][5])
 
-        for guest in existing_guests:
+        guest = session.query(Guests).filter_by(vk_link=vk_link).first()
 
-            if vk_link == guest.vk_link:
-                guest.surname = guests_sheet[i][0]
-                guest.name = guests_sheet[i][1]
-                guest.patronymic = guests_sheet[i][2]
-                guest.phone_number = guests_sheet[i][3]
-                guest.tag = guests_sheet[i][4]
+        if guest:
+            guest.surname = surname
+            guest.name = name
+            guest.patronymic = patronymic
+            guest.phone_number = phone_number
+            guest.tag = tag
 
-                groups = json.loads(f'[{guests_sheet[i][6]}]') if guests_sheet[i][6] else None
-                guest_groups = json.loads(guest.groups)
+            groups = json.loads(f'[{guests_sheet[i][6]}]') if guests_sheet[i][6] else None
+            existing_groups = json.loads(guest.groups)
 
-                if groups and len(groups) > len(guest_groups):
-                    guest.groups = f'[{guests_sheet[i][6]}]'
+            text = ''
+
+            if groups and len(groups) > len(existing_groups):
+                guest.groups = f'[{guests_sheet[i][6]}]'
+
+                # если есть новые группы -> нужно отправить уведомление об этом
+                for group in groups:
+                    if group not in existing_groups:
+                        info = session.query(Notifications).filter_by(group_num=int(group)).first()
+
+                        if info:
+                            text += f'{info.desc}\n'
+
+                if len(text) != 0:
+                    send_message(
+                        vk=vk,
+                        chat_id=guest.chat_id,
+                        text=text
+                    )
 
     info_sheet = spreadsheet['Info']
     existing_info = [information.question for information in session.query(Info).all()]

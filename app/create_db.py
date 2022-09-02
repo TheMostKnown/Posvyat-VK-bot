@@ -1,5 +1,3 @@
-from enum import Enum
-
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -64,6 +62,13 @@ class Sendings(database):
     docs = Column(String, nullable=True)
 
 
+# Таблица для хранения таймера автообновления парсера
+class UpdateTimer(database):
+    __tablename__ = 'timer'
+
+    update_timer = Column(Integer, primary_key=True)
+
+
 # Таблица с инфой о посвяте
 class Info(database):
     __tablename__ = 'info'
@@ -94,6 +99,15 @@ class Command(database):
     admin = Column(Boolean)
 
 
+# Таблица с уведомлениями о повышении уровня
+class Notifications(database):
+    __tablename__ = 'notifications'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    group_num = Column(Integer)
+    desc = Column(String)
+
+
 # Создание таблиц
 def create_tables(engine: Engine) -> None:
     database.metadata.create_all(engine)
@@ -113,6 +127,7 @@ def delete_tables():
     Info.__table__.drop(engine)
     TechSupport.__table__.drop(engine)
     Command.__table__.drop(engine)
+    UpdateTimer.__table__.drop(engine)
 
 
 if __name__ == "__main__":
