@@ -87,6 +87,14 @@ def call_admin_command(
             args=args
         )
 
+    elif command =='/close_tech':
+        admin_commands.close_tech(
+            vk=vk,
+            session=session,
+            chat_id=chat_id,
+            args=args
+        )
+
     else:
         send_message(
             vk=vk,
@@ -124,13 +132,18 @@ def call_guest_command(
     elif text.lower() == 'техподдержка':
         user_commands.tech_support(
             vk=vk,
-            vk_session=vk_session,
+            chat_id=chat_id,
+        )
+        
+    elif text in [information.question for information in session.query(Info).all()]:
+        user_commands.send_answer(
+            vk=vk,
             chat_id=chat_id,
             session=session,
             event=event
         )
-    elif text in [information.question for information in session.query(Info).all()]:
-        user_commands.send_answer(
+    elif text.lower().startswith('tech_support'):
+        user_commands.send_tech_support(
             vk=vk,
             chat_id=chat_id,
             session=session,
