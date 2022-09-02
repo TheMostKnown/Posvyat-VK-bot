@@ -1,3 +1,4 @@
+import re
 import json
 from typing import Optional, List
 import logging
@@ -69,24 +70,6 @@ def get_information(
         )
     return 0
 
-    # for info_event in VkBotLongPoll(vk=vk_session, group_id=settings.VK_GROUP_ID, wait=25).listen():
-    #     logger.info("inside Info listen")
-    #     logger.info(f"Inside Info listen question: {info_event.message['text']}")
-    #     if info_event.type == VkBotEventType.MESSAGE_NEW and info_event.from_user:
-
-    #         info_text = info_event.message['text']
-    #         info_chat_id = int(info_event.message['from_id'])
-    
-
-    #         if info_text in questions:
-    #             respond = available_info[info_text]
-    #             send_message(
-    #                 vk=vk,
-    #                 chat_id=info_chat_id,
-    #                 text=respond,
-    #                 keyboard=user_keyboard.info_keyboard(questions)
-    #             )
-    #         return 0
 
 def send_answer(
         vk: vk_api.vk_api.VkApiMethod,
@@ -189,74 +172,54 @@ def what_missed(
 
 def tech_support(
         vk: vk_api.vk_api.VkApiMethod,
-        vk_session: vk_api.vk_api.VkApi,
         chat_id: int,
-        session: Session,
-        event: Optional[VkBotEvent] = None,
 ) -> int:
     """ The function for tech support button
 
     :param vk: session for connecting to VK API
-    :param vk_session: VK session
     :param chat_id: user id for sending message
-    :param session: session to connect to the database
-    :param event: event object in VK
 
     :return: error number or 0
     """ 
     main_message = 'Вы можете направить обращение в техническую поддержку.\n'
-    main_message += 'Пожалуйста, изложите свою проблему в одном сообщении.\n'
-    main_message += 'Если вы передумали связываться с техподдержкой, отправьте "отмена"'
+    main_message += 'Для этого изложите свою проблему в одном сообщении в следующем текстовом формате:\n'
+    main_message += 'TECH_SUPPORT: текст вашего обращения'
     send_message(vk, chat_id, main_message)
+    return 0
 
-    for tech_event in VkBotLongPoll(vk=vk_session, group_id=settings.VK_GROUP_ID, wait=25).listen():
+def send_tech_support(
+    vk: vk_api.vk_api.VkApiMethod,
+    chat_id: int,
+    session: Session,
+    event: Optional[VkBotEvent] = None,
+) -> int:
 
-        logger.info('Inside Tech Support listen for message')
+    tech_text = event.message['text'].lower()
 
-        if tech_event.type == VkBotEventType.MESSAGE_NEW and tech_event.from_user:
-            
-            tech_text = tech_event.message["text"]
-            logger.info(f'Tech support got message {tech_text}')
-            tech_chat_id = int(tech_event.message['from_id'])
+    correct = re.search(r"tech_support\s*\:\s*(.{1,200})\s*", tech_text)
+    if not correct:
+        send_message(vk, chat_id, "Не удалось отправить сообщение в техническую поддержку.")
+        return 0
+    message = correct[1]
+    logger.info(f'Tech support message: {message}')
+    user_info = vk.users.get(user_id=chat_id, fields='domain')[0]
 
-            if tech_text.lower() == 'отмена':
-                return 0
+    session.add(
+        TechSupport(
+            vk_link=user_info['domain'],
+            per_question=message,
+            status='open'
+        )
+    )
+    #сообщение пользователю
+    send_message(vk, chat_id, "Сообщение успешно отправлено в техподдержку. В ближайшее время Вам помогут!")
+    #сообщение техподдержке
+    send_message(
+        vk=vk,
+        chat_id=settings.TECH_SUPPORT_VK_ID,
+        text=f'Пользователь vk.com/{user_info["domain"]} ({chat_id}) написал в техподдержку'
+    )
+    session.commit()
+    return 0
 
-            respond_text = f'В техподдержку будет отправлено следующее сообщение: "{tech_text}".\n'
-            respond_text += 'Для подтверждения данного действия отправьте "да"\n'
-            respond_text += 'Для отмены данного действия отправьте "отмена"'
-            send_message(vk, tech_chat_id, respond_text)
 
-
-            for confirm_event in VkBotLongPoll(vk=vk_session, group_id=settings.VK_GROUP_ID, wait=25).listen():
-                if confirm_event.type == VkBotEventType.MESSAGE_NEW and tech_event.from_user:
-                    logger.info('Inside Tech Support listen for "yes" or "cansel"')
-
-                    confirm_text = confirm_event.message["text"].lower()
-                    confirm_chat_id = int(confirm_event.message['from_id'])
-
-                    if confirm_text == 'да':
-                        user_info = vk.users.get(user_id=confirm_chat_id, fields='domain')[0]
-                        session.add(
-                            TechSupport(
-                               vk_link=user_info['domain'],
-                               per_question=tech_text,
-                               status='open'
-                            )
-                        )
-                        session.commit()
-                        #сообщение пользователю
-                        send_message(vk, confirm_chat_id, "Сообщение успешно отправлено в техподдержку.")
-                        #сообщение техподдержке
-                        send_message(
-                            vk=vk,
-                            chat_id=settings.TECH_SUPPORT_VK_ID,
-                            text=f'Пользователь vk.com/{user_info["domain"]} ({confirm_chat_id}) написал в техподдержку'
-                        )
-                        return 0
-
-                    elif confirm_text == 'отмена':
-                        return 0
-
-                    else:
-                        send_message(vk, confirm_chat_id, f"Команда не распознана!\n{respond_text}")
