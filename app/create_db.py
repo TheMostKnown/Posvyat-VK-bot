@@ -63,10 +63,10 @@ class Sendings(database):
 
 
 # Таблица для хранения таймера автообновления парсера
-class UpdateTimer(database):
-    __tablename__ = 'timer'
+# class UpdateTimer(database):
+#     __tablename__ = 'timer'
 
-    update_timer = Column(Integer, primary_key=True)
+#     update_timer = Column(Integer, primary_key=True)
 
 
 # Таблица с инфой о посвяте
@@ -132,7 +132,6 @@ def delete_tables():
     Info.__table__.drop(engine)
     TechSupport.__table__.drop(engine)
     Command.__table__.drop(engine)
-    UpdateTimer.__table__.drop(engine)
 
 
 if __name__ == "__main__":

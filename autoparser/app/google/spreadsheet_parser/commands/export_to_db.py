@@ -6,7 +6,7 @@ import vk_api.vk_api
 from sqlalchemy.orm import Session
 
 from app.google.spreadsheet_parser.spreadsheet_parser import get_data
-from app.create_db import Sendings, Orgs, Groups, Command, Guests, Info, UpdateTimer, Notifications
+from app.create_db import Sendings, Orgs, Groups, Command, Guests, Info, Notifications
 from app.utils.upload import upload_photo, upload_pdf_doc
 from app.send_message import send_message
 
@@ -34,16 +34,16 @@ def get_init_data(
     )
 
     # getting autoparser timer
-    timer_sheet = spreadsheet['Timer']
+    # timer_sheet = spreadsheet['Timer']
 
-    timer = session.query(UpdateTimer).first()
+    # timer = session.query(UpdateTimer).first()
 
-    if timer:
-        timer.update_timer = int(timer_sheet[0][0])
-    else:
-        session.add(
-            UpdateTimer(update_timer=int(timer_sheet[0][0]))
-        )
+    # if timer:
+    #     timer.update_timer = int(timer_sheet[0][0])
+    # else:
+    #     session.add(
+    #         UpdateTimer(update_timer=int(timer_sheet[0][0]))
+    #     )
 
     # getting info about notifications
     notification_sheet = spreadsheet['Notifications']

@@ -7,8 +7,7 @@ from sqlalchemy import desc, asc
 from sqlalchemy.orm import Session
 
 from app.vk_events.send_message import send_message
-from app.vk_tools.admin_handler import admin_add_info
-from app.create_db import Guests, Orgs, Groups, Sendings, Command, TechSupport, UpdateTimer
+from app.create_db import Guests, Orgs, Groups, Sendings, Command, TechSupport
 from app.vk_tools.utils.make_domain import make_domain
 from app.vk_tools.google.spreadsheet_parser.commands.export_to_db import get_init_data
 
@@ -65,7 +64,7 @@ def get_commands(
                 message_texts.append(message_text)
                 message_text = ''
 
-            message_text += f'\n{i + 1}) {command["name"]} {command["arguments"]}  ({command["info"]}'
+            message_text += f'\n{i + 1}) {command["name"]} {command["arguments"]}  ({command["info"]})'
 
     message_texts.append(message_text)
 
@@ -140,24 +139,24 @@ def get_mailings(
 
 
 # args = [{Groups.number}]
-def update_timer(
-        session: Session,
-        args: Optional[List[str]] = None
-) -> None:
-    """ The function of updating of autoparser's timing.
+# def update_timer(
+#         session: Session,
+#         args: Optional[List[str]] = None
+# ) -> None:
+#     """ The function of updating of autoparser's timing.
 
-        :param session: session to connect to the database
-        :param args: arguments of the command entered
+#         :param session: session to connect to the database
+#         :param args: arguments of the command entered
 
-        :return: None
-    """
-    timer = session.query(UpdateTimer).first()
+#         :return: None
+#     """
+#     timer = session.query(UpdateTimer).first()
 
-    if args and args[0].isnumeric():
-        if timer:
-            timer.update_timer = args[0]
-        else:
-            session.add(UpdateTimer(update_timer=int(args[0])))
+#     if args and args[0].isnumeric():
+#         if timer:
+#             timer.update_timer = args[0]
+#         else:
+#             session.add(UpdateTimer(update_timer=int(args[0])))
 
 
 # args = [quantity | Groups.group_num]
@@ -386,17 +385,17 @@ def restart_parser(
         creds_file_name=creds_file_name,
         token_file_name=token_file_name
     )
-    update_timer(session)
+    #update_timer(session)
     logger.info('Parser has restarted')
 
 
-def info(
-        vk: vk_api.vk_api.VkApiMethod,
-        session: Session,
-        chat_id: int,
-        text: str
-) -> None:
-    if admin_add_info(session, text):
-        send_message(vk, chat_id, "Вопрос добавлен")
-    else:
-        send_message(vk, chat_id, "Не удалось добавить вопрос")
+# def info(
+#         vk: vk_api.vk_api.VkApiMethod,
+#         session: Session,
+#         chat_id: int,
+#         text: str
+# ) -> None:
+#     if admin_add_info(session, text):
+#         send_message(vk, chat_id, "Вопрос добавлен")
+#     else:
+#         send_message(vk, chat_id, "Не удалось добавить вопрос")

@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from app.create_db import get_session, engine
 from app.config import settings
-from app.create_db import UpdateTimer
 from app.google.spreadsheet_parser.commands.export_to_db import get_init_data
 
 
@@ -24,14 +23,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-PARSER_SLEEP_TIME = 2
+PARSER_SLEEP_TIME = settings.PARSER_SLEEP_TIME
 
 
-def update_timer(session: Session) -> None:
-    timer = session.query(UpdateTimer).first()
+# def update_timer(session: Session) -> None:
+#     timer = session.query(UpdateTimer).first()
 
-    if timer:
-        PARSER_SLEEP_TIME = timer.update_timer
+#     if timer:
+#         PARSER_SLEEP_TIME = timer.update_timer
 
 
 def start_parsing():
@@ -44,7 +43,7 @@ def start_parsing():
         token_file_name=settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH
     ) 
     logger.info(f' Successfull AutoParsing after {PARSER_SLEEP_TIME} minutes')
-    update_timer(session)
+    #update_timer(session)
 
 
 schedule.every(PARSER_SLEEP_TIME).minutes.do(start_parsing)

@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     DB_PATH: Optional[str]
 
     GOOGLE_TABLE_ID: Optional[str]
+    PARSER_SLEEP_TIME: Optional[int]
 
     GOOGLE_CREDS_PATH: Optional[str]
     GOOGLE_TOKEN_PATH: Optional[str]
@@ -30,6 +31,7 @@ class Settings(BaseSettings):
             'TECH_SUPPORT_VK_ID': {'env': 'TECH_SUPPORT_VK_ID'},
             'DB_PATH': {'env': 'DB_PATH'},
             'GOOGLE_TABLE_ID': {'env': 'GOOGLE_TABLE_ID'},
+            'PARSER_SLEEP_TIME': {'env': 'PARSER_SLEEP_TIME'},
             'GOOGLE_CREDS_PATH': {'env': 'GOOGLE_CREDS_PATH'},
             'GOOGLE_TOKEN_PATH': {'env': 'GOOGLE_TOKEN_PATH'},
         }

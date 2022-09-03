@@ -67,8 +67,8 @@ def call_admin_command(
             args=args
         )
 
-    elif command == '/update_timer':
-        admin_commands.update_timer(session=session, args=args)
+    # elif command == '/update_timer':
+    #     admin_commands.update_timer(session=session, args=args)
 
     elif command == '/start_mailing':
         start_mailing(
@@ -78,7 +78,7 @@ def call_admin_command(
         )
 
     elif command == '/get_open_issues':
-        open_issues(vk=vk, session=session)
+        open_issues(vk=vk, session=session, chat_id=chat_id)
 
     elif command == '/send_message':
         start_mailing_by_domain(
