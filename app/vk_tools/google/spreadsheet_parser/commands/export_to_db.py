@@ -43,6 +43,8 @@ def get_init_data(
             UpdateTimer(update_timer=int(timer_sheet[0][0]))
         )
 
+    session.commit()
+
     # getting info about notifications
     notification_sheet = spreadsheet['Notifications']
 
@@ -62,6 +64,8 @@ def get_init_data(
                 )
             )
 
+    session.commit()
+
     # getting info about guests' groups
     groups_sheet = spreadsheet['Levels']
 
@@ -80,6 +84,8 @@ def get_init_data(
                     group_info=group_info
                 )
             )
+
+    session.commit()
 
     # getting info about commands for calling
     commands_sheet = spreadsheet['Commands']
@@ -105,6 +111,8 @@ def get_init_data(
                     admin=admin
                 )
             )
+
+    session.commit()
 
     # getting info about mailings
     sendings_sheet = spreadsheet['Sendings']
@@ -175,6 +183,8 @@ def get_init_data(
                 )
             )
 
+    session.commit()
+
     # getting info about users with admin rights
     organizers_sheet = spreadsheet['Organizers']
 
@@ -205,6 +215,8 @@ def get_init_data(
                     groups=f'[{groups}]'
                 )
             )
+
+    session.commit()
 
     # getting info about participants
     guests_sheet = spreadsheet['Guests']
@@ -249,11 +261,12 @@ def get_init_data(
                         text=text
                     )
 
+    session.commit()
+
     info_sheet = spreadsheet['Info']
     existing_info = [information.question for information in session.query(Info).all()]
 
-    for i in range (1, len(info_sheet)):
-
+    for i in range(1, len(info_sheet)):
         info_question = info_sheet[i][0]
 
         if info_question not in existing_info:
@@ -265,6 +278,5 @@ def get_init_data(
                     answer=info_answer
                 )
             )
-
 
     session.commit()

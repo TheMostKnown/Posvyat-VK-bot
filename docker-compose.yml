@@ -6,8 +6,7 @@ services:
     depends_on:
       - db
   autoparser:
-    build: ./autoparser
-    command: python main.py
+    build: .
     depends_on:
       - db
       - app

@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import Engine
 from sqlalchemy import create_engine
 
-from config import settings
+from autoparser.app.config import settings
 
 # Создание движка
 database = declarative_base()

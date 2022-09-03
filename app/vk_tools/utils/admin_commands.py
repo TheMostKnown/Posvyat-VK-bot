@@ -343,6 +343,7 @@ def get_groups(
     session.commit()
     return 0
 
+
 def close_tech(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
@@ -353,6 +354,7 @@ def close_tech(
 
         :param vk: session for connecting to VK API
         :param session: session to connect to the database
+        :param chat_id: chat_id of user
         :param args: arguments of the command entered
 
         :return: error number or 0
@@ -362,12 +364,13 @@ def close_tech(
         return 1
     domains = json.loads(f'[{args[0]}]')
     for domain in domains:
-        for issue in session.query(TechSupport).filter(TechSupport.vk_link==str(domain)).all():
-                issue.status='closed'
-                send_message(vk, chat_id, f'Закрыт вопрос "{issue.per_question}" от пользователя vk.com/{issue.vk_link}')
-            
+        for issue in session.query(TechSupport).filter(TechSupport.vk_link == str(domain)).all():
+            issue.status = 'closed'
+            send_message(vk, chat_id, f'Закрыт вопрос "{issue.per_question}" от пользователя vk.com/{issue.vk_link}')
+
     session.commit()
     return 0
+
 
 def restart_parser(
         vk: vk_api.vk_api.VkApiMethod,
@@ -393,9 +396,7 @@ def info(
         chat_id: int,
         text: str
 ) -> None:
-
     if admin_add_info(session, text):
         send_message(vk, chat_id, "Вопрос добавлен")
     else:
         send_message(vk, chat_id, "Не удалось добавить вопрос")
-        

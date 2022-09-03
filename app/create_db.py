@@ -104,7 +104,7 @@ class Notifications(database):
     __tablename__ = 'notifications'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    group_num = Column(Integer)
+    group_num = Column(Integer, primary_key=True)
     desc = Column(String)
 
 
@@ -115,7 +115,12 @@ def create_tables(engine: Engine) -> None:
 
 # Создание сессии
 def get_session(engine: Engine) -> Session:
-    return sessionmaker(bind=engine)()
+    return sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+        expire_on_commit=False
+    )()
 
 
 # Удаление таблиц
