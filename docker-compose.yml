@@ -5,6 +5,12 @@ services:
     build: .
     depends_on:
       - db
+  autoparser:
+    build: ./autoparser
+    command: python main.py
+    depends_on:
+      - db
+      - app
   db:
     image: postgres:latest
     volumes:
