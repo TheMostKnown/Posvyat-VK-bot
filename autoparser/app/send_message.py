@@ -50,7 +50,7 @@ def send_message(
         keyboard=None if not keyboard else keyboard.get_keyboard()
     )
 
-    time.sleep(settings.DELAY)
+    #time.sleep(settings.DELAY)
 
     if message_id in error_codes_list:
 
