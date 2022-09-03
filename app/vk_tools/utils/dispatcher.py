@@ -93,7 +93,7 @@ def call_admin_command(
             spreadsheet_id=settings.GOOGLE_TABLE_ID,
             creds_file_name=settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
             token_file_name=settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH
-
+        )
     elif command =='/close_tech':
         admin_commands.close_tech(
             vk=vk,
