@@ -4,8 +4,8 @@ import vk_api
 import time
 from typing import Optional, List
 
-from autoparser.app.config import settings
-from autoparser.app.create_db import get_session, engine, Guests, Orgs
+from app.config import settings
+from app.create_db import get_session, engine, Guests, Orgs
 
 
 def send_message(
@@ -50,7 +50,7 @@ def send_message(
         keyboard=None if not keyboard else keyboard.get_keyboard()
     )
 
-    time.sleep(settings.DELAY)
+    #time.sleep(settings.DELAY)
 
     if message_id in error_codes_list:
 

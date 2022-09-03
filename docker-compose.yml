@@ -5,11 +5,11 @@ services:
     build: .
     depends_on:
       - db
+      - autoparser
   autoparser:
-    build: .
+    build: ./autoparser
     depends_on:
       - db
-      - app
   db:
     image: postgres:latest
     volumes:

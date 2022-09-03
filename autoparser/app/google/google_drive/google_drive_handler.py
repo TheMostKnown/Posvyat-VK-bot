@@ -5,7 +5,7 @@ from PIL import Image
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
-from google.get_creds import get_creds
+from app.google.get_creds import get_creds
 
 # Подключение логов
 logging.basicConfig(

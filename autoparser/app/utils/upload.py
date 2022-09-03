@@ -2,8 +2,8 @@ import logging
 
 import vk_api
 
-from config import settings
-from google.google_drive.google_drive_handler import download_picture, download_pdf_doc
+from app.config import settings
+from app.google.google_drive.google_drive_handler import download_picture, download_pdf_doc
 
 # Подключение логов
 logging.basicConfig(

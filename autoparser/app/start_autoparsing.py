@@ -1,13 +1,14 @@
 import logging
 import schedule
+import time
 
 import vk_api
 from sqlalchemy.orm import Session
 
-from ..app.create_db import get_session, engine
-from ..app.config import settings
-from ..app.create_db import UpdateTimer
-from ..app.google.spreadsheet_parser.commands.export_to_db import get_init_data
+from app.create_db import get_session, engine
+from app.config import settings
+from app.create_db import UpdateTimer
+from app.google.spreadsheet_parser.commands.export_to_db import get_init_data
 
 
 # connecting to db
@@ -34,6 +35,7 @@ def update_timer(session: Session) -> None:
 
 
 def start_parsing():
+    logger.info(f'AUTOPARSING!')
     get_init_data(
         vk=vk,
         session=session,
@@ -41,8 +43,11 @@ def start_parsing():
         creds_file_name=settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
         token_file_name=settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH
     ) 
+    logger.info(f' Successfull AutoParsing after {PARSER_SLEEP_TIME} minutes')
     update_timer(session)
-    logger.info('AutoParser has started')
 
 
-schedule.every(PARSER_SLEEP_TIME).minutes.do(start_parsing())
+schedule.every(PARSER_SLEEP_TIME).minutes.do(start_parsing)
+
+while True:
+    schedule.run_pending()

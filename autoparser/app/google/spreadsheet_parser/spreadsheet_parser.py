@@ -1,7 +1,7 @@
 from googleapiclient.discovery import build
 
-from config import settings
-from google.get_creds import get_creds
+from app.config import settings
+from app.google.get_creds import get_creds
 
 
 def get_data(

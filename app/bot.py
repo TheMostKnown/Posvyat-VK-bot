@@ -29,15 +29,15 @@ def start():
     logger = logging.getLogger(__name__)
 
     # filling database with actual entries
-    # get_init_data(
-    #     vk,
-    #     session,
-    #     settings.GOOGLE_TABLE_ID,
-    #     settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
-    #     settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH
-    # )
+    get_init_data(
+        vk,
+        session,
+        settings.GOOGLE_TABLE_ID,
+        settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
+        settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH
+    )
 
-    logger.info('Parsing successful')
+    logger.info('First Parsing!')
 
     while True:
 

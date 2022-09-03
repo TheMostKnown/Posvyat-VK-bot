@@ -5,10 +5,10 @@ import re
 import vk_api.vk_api
 from sqlalchemy.orm import Session
 
-from google.spreadsheet_parser.spreadsheet_parser import get_data
-from create_db import Sendings, Orgs, Groups, Command, Guests, Info, UpdateTimer, Notifications
-from utils.upload import upload_photo, upload_pdf_doc
-from send_message import send_message
+from app.google.spreadsheet_parser.spreadsheet_parser import get_data
+from app.create_db import Sendings, Orgs, Groups, Command, Guests, Info, UpdateTimer, Notifications
+from app.utils.upload import upload_photo, upload_pdf_doc
+from app.send_message import send_message
 
 
 def make_domain(link: str) -> str:
@@ -129,7 +129,7 @@ def get_init_data(
                 pic_id = upload_photo(
                     vk=vk,
                     photo_id=pic,
-                    image_file_path=f'./app/vk_tools/google/spreadsheet_parser/attachments/{pic}.png'
+                    image_file_path=f'./app/google/spreadsheet_parser/attachments/{pic}.png'
                 )
 
                 if len(pic_id) != 0:
@@ -145,7 +145,8 @@ def get_init_data(
                 doc_id = upload_pdf_doc(
                     vk=vk,
                     doc_id=doc,
-                    doc_file_path=f'./app/vk_tools/google/spreadsheet_parser/attachments/{doc}.pdf'
+                    doc_file_path=f'./app/google/spreadsheet_parser/attachments/{doc}.pdf'
+
                 )
 
                 if len(doc_id) != 0:
