@@ -104,35 +104,11 @@ class Notifications(database):
     __tablename__ = 'notifications'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    group_num = Column(Integer, primary_key=True)
+    group_num = Column(Integer)
     desc = Column(String)
-
-
-# Создание таблиц
-def create_tables(engine: Engine) -> None:
-    database.metadata.create_all(engine)
 
 
 # Создание сессии
 def get_session(engine: Engine) -> Session:
-    return sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=engine,
-        expire_on_commit=False
-    )()
+    return sessionmaker(bind=engine)()
 
-
-# Удаление таблиц
-def delete_tables():
-    Groups.__table__.drop(engine)
-    Guests.__table__.drop(engine)
-    Orgs.__table__.drop(engine)
-    Sendings.__table__.drop(engine)
-    Info.__table__.drop(engine)
-    TechSupport.__table__.drop(engine)
-    Command.__table__.drop(engine)
-
-
-if __name__ == "__main__":
-    create_tables(engine)

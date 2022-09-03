@@ -8,7 +8,8 @@ from app.config import settings
 
 def open_issues(
         vk: vk_api.vk_api.VkApiMethod,
-        session: Session
+        session: Session,
+        chat_id: int
 ) -> int:
     """ The function of sending open issues in VK.
 
@@ -27,10 +28,16 @@ def open_issues(
                    f'{issue.per_question}\n'
     else:
         text = 'Сейчас нет открытых баг-репортов. Можешь почиллить!'
-
+    #сообщение техподдержке
     send_message(
         vk=vk,
         chat_id=settings.TECH_SUPPORT_VK_ID,
+        text=text
+    )
+    #сообщение админу, который вызвал
+    send_message(
+        vk=vk,
+        chat_id=chat_id,
         text=text
     )
 

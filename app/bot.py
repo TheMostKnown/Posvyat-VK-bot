@@ -37,7 +37,7 @@ def start():
         settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH
     )
 
-    logger.info('Parsing successful')
+    logger.info('First Parsing!')
 
     while True:
 

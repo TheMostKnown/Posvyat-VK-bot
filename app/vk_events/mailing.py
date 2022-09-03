@@ -5,10 +5,8 @@ from typing import Optional, List
 import vk_api
 from sqlalchemy.orm import Session
 
-from app.config import settings
-from app.create_db import Sendings, Guests, Groups
+from app.create_db import Sendings, Guests
 from app.vk_events.send_message import send_message
-from app.vk_tools.utils.upload import upload_photo
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

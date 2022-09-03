@@ -15,6 +15,7 @@ from app.create_db import Info
 
 logger = logging.getLogger(__name__)
 
+
 def call_admin_command(
         vk: vk_api.vk_api.VkApiMethod,
         session: Session,
@@ -66,8 +67,8 @@ def call_admin_command(
             args=args
         )
 
-    elif command == '/update_timer':
-        admin_commands.update_timer(args=args)
+    # elif command == '/update_timer':
+    #     admin_commands.update_timer(session=session, args=args)
 
     elif command == '/start_mailing':
         start_mailing(
@@ -77,7 +78,7 @@ def call_admin_command(
         )
 
     elif command == '/get_open_issues':
-        open_issues(vk=vk, session=session)
+        open_issues(vk=vk, session=session, chat_id=chat_id)
 
     elif command == '/send_message':
         start_mailing_by_domain(
@@ -94,7 +95,8 @@ def call_admin_command(
             creds_file_name=settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
             token_file_name=settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH
         )
-    elif command =='/close_tech':
+
+    elif command == '/close_tech':
         admin_commands.close_tech(
             vk=vk,
             session=session,
@@ -118,7 +120,8 @@ def call_guest_command(
         event: VkBotEvent,
         text: str
 ) -> None:
-    logger.info(f'Inside call_guest, resieved message "{text}"')
+    logger.info(f'Inside call_guest, received message "{text}"')
+
     if text.lower() == 'информация':
         user_commands.get_information(
             vk=vk,
@@ -127,7 +130,7 @@ def call_guest_command(
             session=session,
             event=event
         )
-            
+
     elif text.lower() == 'что пропустил?':
         user_commands.what_missed(
             vk=vk,
@@ -135,13 +138,13 @@ def call_guest_command(
             session=session,
             event=event
         )
-        
+
     elif text.lower() == 'техподдержка':
         user_commands.tech_support(
             vk=vk,
             chat_id=chat_id,
         )
-        
+
     elif text in [information.question for information in session.query(Info).all()]:
         user_commands.send_answer(
             vk=vk,
@@ -162,8 +165,7 @@ def call_guest_command(
             vk=vk,
             chat_id=chat_id,
             event=event
-            )
-
+        )
 
 
 def split_command_text(text: str) -> dict:
@@ -172,4 +174,3 @@ def split_command_text(text: str) -> dict:
     args = re.findall('<(.*?)>', text, re.DOTALL)
 
     return {'command': command_name, 'args': args}
-

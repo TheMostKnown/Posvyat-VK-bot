@@ -1,14 +1,20 @@
 import json
 import logging
+import re
 
 import vk_api.vk_api
 from sqlalchemy.orm import Session
 
-from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
+from app.google.spreadsheet_parser.spreadsheet_parser import get_data
 from app.create_db import Sendings, Orgs, Groups, Command, Guests, Info, Notifications
-from app.vk_tools.utils.make_domain import make_domain
-from app.vk_tools.utils.upload import upload_photo, upload_pdf_doc
-from app.vk_events.send_message import send_message
+from app.utils.upload import upload_photo, upload_pdf_doc
+from app.send_message import send_message
+
+
+def make_domain(link: str) -> str:
+    domain = re.sub(r'[@*]?|(.*vk.com/)', '', link.lower())
+
+    return domain
 
 
 def get_init_data(
@@ -19,10 +25,6 @@ def get_init_data(
         token_file_name: str,
 ) -> None:
     # Подключение логов
-    logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=logging.INFO
-    )
     logger = logging.getLogger(__name__)
 
     spreadsheet = get_data(
@@ -31,7 +33,7 @@ def get_init_data(
         token_file_name
     )
 
-    # # getting autoparser timer
+    # getting autoparser timer
     # timer_sheet = spreadsheet['Timer']
 
     # timer = session.query(UpdateTimer).first()
@@ -42,8 +44,6 @@ def get_init_data(
     #     session.add(
     #         UpdateTimer(update_timer=int(timer_sheet[0][0]))
     #     )
-
-    # session.commit()
 
     # getting info about notifications
     notification_sheet = spreadsheet['Notifications']
@@ -64,8 +64,6 @@ def get_init_data(
                 )
             )
 
-    session.commit()
-
     # getting info about guests' groups
     groups_sheet = spreadsheet['Levels']
 
@@ -84,8 +82,6 @@ def get_init_data(
                     group_info=group_info
                 )
             )
-
-    session.commit()
 
     # getting info about commands for calling
     commands_sheet = spreadsheet['Commands']
@@ -112,8 +108,6 @@ def get_init_data(
                 )
             )
 
-    session.commit()
-
     # getting info about mailings
     sendings_sheet = spreadsheet['Sendings']
 
@@ -135,7 +129,7 @@ def get_init_data(
                 pic_id = upload_photo(
                     vk=vk,
                     photo_id=pic,
-                    image_file_path=f'./app/vk_tools/google/spreadsheet_parser/attachments/{pic}.png'
+                    image_file_path=f'./app/google/spreadsheet_parser/attachments/{pic}.png'
                 )
 
                 if len(pic_id) != 0:
@@ -151,7 +145,8 @@ def get_init_data(
                 doc_id = upload_pdf_doc(
                     vk=vk,
                     doc_id=doc,
-                    doc_file_path=f'./app/vk_tools/google/spreadsheet_parser/attachments/{doc}.pdf'
+                    doc_file_path=f'./app/google/spreadsheet_parser/attachments/{doc}.pdf'
+
                 )
 
                 if len(doc_id) != 0:
@@ -183,8 +178,6 @@ def get_init_data(
                 )
             )
 
-    session.commit()
-
     # getting info about users with admin rights
     organizers_sheet = spreadsheet['Organizers']
 
@@ -215,8 +208,6 @@ def get_init_data(
                     groups=f'[{groups}]'
                 )
             )
-
-    session.commit()
 
     # getting info about participants
     guests_sheet = spreadsheet['Guests']
@@ -261,12 +252,11 @@ def get_init_data(
                         text=text
                     )
 
-    session.commit()
-
     info_sheet = spreadsheet['Info']
     existing_info = [information.question for information in session.query(Info).all()]
 
-    for i in range(1, len(info_sheet)):
+    for i in range (1, len(info_sheet)):
+
         info_question = info_sheet[i][0]
 
         if info_question not in existing_info:
@@ -278,5 +268,6 @@ def get_init_data(
                     answer=info_answer
                 )
             )
+
 
     session.commit()
