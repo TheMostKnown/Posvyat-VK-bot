@@ -216,9 +216,9 @@ def get_init_data(
         surname = guests_sheet[i][0]
         name = guests_sheet[i][1]
         patronymic = guests_sheet[i][2]
-        phone_number = guests_sheet[i][3]
-        tag = guests_sheet[i][4]
-        vk_link = make_domain(guests_sheet[i][5])
+        phone_number = guests_sheet[i][22]
+        tag = guests_sheet[i][24]
+        vk_link = make_domain(guests_sheet[i][23])
 
         guest = session.query(Guests).filter_by(vk_link=vk_link).first()
 
@@ -229,13 +229,13 @@ def get_init_data(
             guest.phone_number = phone_number
             guest.tag = tag
 
-            groups = json.loads(f'[{guests_sheet[i][6]}]') if guests_sheet[i][6] else None
+            groups = json.loads(f'[{guests_sheet[i][30]}]') if guests_sheet[i][30] else None
             existing_groups = json.loads(guest.groups)
 
             text = ''
 
             if groups and len(groups) > len(existing_groups):
-                guest.groups = f'[{guests_sheet[i][6]}]'
+                guest.groups = f'[{guests_sheet[i][30]}]'
 
                 # если есть новые группы -> нужно отправить уведомление об этом
                 for group in groups:
