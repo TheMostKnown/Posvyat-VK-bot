@@ -295,5 +295,3 @@ def get_init_data(
 
     session.commit()
 
-
-    session.commit()
