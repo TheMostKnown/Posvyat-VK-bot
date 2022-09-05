@@ -5,7 +5,7 @@ import vk_api.vk_api
 from sqlalchemy.orm import Session
 
 from app.vk_tools.google.spreadsheet_parser.spreadsheet_parser import get_data
-from app.create_db import Sendings, Orgs, Groups, Command, Guests, Info, Notifications
+from app.create_db import Sendings, Orgs, Groups, Command, Guests, Info, Notifications, Missing
 from app.vk_tools.utils.make_domain import make_domain
 from app.vk_tools.utils.upload import upload_photo, upload_pdf_doc
 from app.vk_events.send_message import send_message
@@ -259,7 +259,7 @@ def get_init_data(
                             text=text
                         )
 
-        session.commit()
+    session.commit()
 
     info_sheet = spreadsheet['Info']
 
@@ -278,6 +278,30 @@ def get_init_data(
                     Info(
                         question=info_question,
                         answer=info_answer
+                    )
+                )
+
+
+    session.commit()
+
+
+    missing_sheet = spreadsheet['Missing']
+
+    for i in range (1, len(missing_sheet)):
+        missing_button = missing_sheet[i][0]
+        missing_answer = missing_sheet[i][1]
+
+        if missing_button is not None:
+
+            missed = session.query(Missing).filter_by(button=missing_button).first()
+
+            if missed:
+                missed.answer = missing_answer
+            else:
+                session.add(
+                    Missing(
+                        button=missing_button,
+                        answer=missing_answer
                     )
                 )
 

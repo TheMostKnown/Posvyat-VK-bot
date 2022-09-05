@@ -77,6 +77,12 @@ class Info(database):
     question = Column(String)
     answer = Column(String)
 
+class Missing(database):
+    __tablename__ = 'missing'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    button = Column(String)
+    answer = Column(String)
 
 # Таблица с тех саппортом
 class TechSupport(database):
