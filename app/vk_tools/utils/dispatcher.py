@@ -11,7 +11,7 @@ from app.vk_events.mailing import messages as start_mailing, messages_by_domain 
 from app.vk_events.issues import open_issues
 from app.vk_tools.utils.admin_commands import restart_parser
 from app.config import settings
-from app.create_db import Info
+from app.create_db import Info, Missing
 
 logger = logging.getLogger(__name__)
 
@@ -209,6 +209,15 @@ def call_guest_command(
             session=session,
             event=event
         )
+
+    elif text in [missed.button for missed in session.query(Missing).all()]:
+        user_commands.send_answer_missed(
+            vk=vk,
+            chat_id=chat_id,
+            session=session,
+            event=event
+        )
+    
     elif text.lower().startswith('tech_support'):
         user_commands.send_tech_support(
             vk=vk,
