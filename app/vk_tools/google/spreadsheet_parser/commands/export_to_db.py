@@ -225,9 +225,9 @@ def get_init_data(
         surname = guests_sheet[i][0]
         name = guests_sheet[i][1]
         patronymic = guests_sheet[i][2]
-        phone_number = guests_sheet[i][3]
-        tag = guests_sheet[i][4]
-        vk_link = make_domain(guests_sheet[i][5])
+        phone_number = guests_sheet[i][22]
+        tag = guests_sheet[i][24]
+        vk_link = make_domain(guests_sheet[i][23])
 
         guest = session.query(Guests).filter_by(vk_link=vk_link).first()
 
@@ -238,7 +238,7 @@ def get_init_data(
             guest.phone_number = phone_number
             guest.tag = tag
 
-            groups = json.loads(f'[{guests_sheet[i][6]}]') if guests_sheet[i][6] else None
+            groups = json.loads(f'[{guests_sheet[i][30]}]') if guests_sheet[i][30] else None
             existing_groups = json.loads(guest.groups)
 
             text = ''
@@ -264,14 +264,16 @@ def get_init_data(
     session.commit()
 
     info_sheet = spreadsheet['Info']
-    existing_info = [information.question for information in session.query(Info).all()]
 
-    for i in range(1, len(info_sheet)):
+    for i in range (1, len(info_sheet)):
         info_question = info_sheet[i][0]
+        info_answer = info_sheet[i][1]
 
-        if info_question not in existing_info:
-            info_answer = info_sheet[i][1]
+        info_button = session.query(Info).filter_by(question=info_question).first()
 
+        if info_button:
+            info_button.answer = info_answer
+        else:
             session.add(
                 Info(
                     question=info_question,

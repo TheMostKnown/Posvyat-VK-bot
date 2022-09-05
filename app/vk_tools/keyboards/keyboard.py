@@ -21,7 +21,7 @@ class Keyboard:
     def get(self):
         for count, button in enumerate(self.buttons):
             self.keyboard.add_button(button)
-            if count%4 == 0:
+            if count != (len(self.buttons)-1):
                 self.keyboard.add_line()
 
         return self.keyboard
