@@ -21,7 +21,6 @@ class Settings(BaseSettings):
     GOOGLE_CREDS_PATH: Optional[str]
     GOOGLE_TOKEN_PATH: Optional[str]
 
-
     class Config:
         env_prefix = 'POSVYAT_AUTOPARSER_'
         env_file = f'{dir_name}/secrets/.env'
@@ -30,6 +29,7 @@ class Settings(BaseSettings):
             'VK_TOKEN': {'env': 'VK_TOKEN'},
             'TECH_SUPPORT_VK_ID': {'env': 'TECH_SUPPORT_VK_ID'},
             'DB_PATH': {'env': 'DB_PATH'},
+            'TEST_GOOGLE_TABLE_ID': {'env': 'TEST_GOOGLE_TABLE_ID'},
             'GOOGLE_TABLE_ID': {'env': 'GOOGLE_TABLE_ID'},
             'PARSER_SLEEP_TIME': {'env': 'PARSER_SLEEP_TIME'},
             'GOOGLE_CREDS_PATH': {'env': 'GOOGLE_CREDS_PATH'},
