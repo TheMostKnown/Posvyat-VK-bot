@@ -5,7 +5,7 @@ from typing import Optional, List
 import vk_api
 from sqlalchemy.orm import Session
 
-from app.create_db import Sendings, Guests
+from app.create_db import Sendings, Guests, Orgs
 from app.vk_events.send_message import send_message
 
 logging.basicConfig(
@@ -131,4 +131,42 @@ def messages_by_domain(
                 break
 
     session.commit()
+    return 0
+
+
+def send_to_admin(
+        vk: vk_api.vk_api.VkApiMethod,
+        session: Session,
+        args: Optional[List[str]]
+) -> int:
+
+    if not args:
+        return 1
+
+    text = session.query(Sendings).filter_by(mail_name=args[0]).first()
+    if not text:
+        return 2
+    if not text.text:
+        return 10
+
+    text_pics = json.loads(text.pics)
+    text_video = json.loads(text.video)
+    text_reposts = json.loads(text.reposts)
+    text_docs = json.loads(text.docs)
+
+    admins = session.query(Orgs).all()
+
+    for admin in admins:
+        send_message(
+            vk=vk,
+            chat_id=admin.chat_id,
+            text=text.text,
+            attachments=[
+                *text_pics,
+                *text_video,
+                *text_reposts,
+                *text_docs
+            ]
+        )
+
     return 0
