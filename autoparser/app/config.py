@@ -15,6 +15,7 @@ class Settings(BaseSettings):
 
     DB_PATH: Optional[str]
 
+    TEST_GOOGLE_TABLE_ID: Optional[str]
     GOOGLE_TABLE_ID: Optional[str]
     PARSER_SLEEP_TIME: Optional[int]
 
