@@ -253,15 +253,16 @@ def get_init_data(
                     )
 
     info_sheet = spreadsheet['Info']
-    existing_info = [information.question for information in session.query(Info).all()]
 
     for i in range (1, len(info_sheet)):
-
         info_question = info_sheet[i][0]
+        info_answer = info_sheet[i][1]
 
-        if info_question not in existing_info:
-            info_answer = info_sheet[i][1]
+        info_button = session.query(Info).filter_by(question=info_question).first()
 
+        if info_button:
+            info_button.answer = info_answer
+        else:
             session.add(
                 Info(
                     question=info_question,
