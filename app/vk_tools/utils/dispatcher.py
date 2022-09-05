@@ -7,11 +7,12 @@ from vk_api.bot_longpoll import VkBotEvent
 
 from app.vk_tools.utils import admin_commands, user_commands
 from app.vk_events.send_message import send_message
-from app.vk_events.mailing import messages as start_mailing, messages_by_domain as start_mailing_by_domain
+from app.vk_events.mailing import messages as start_mailing, messages_by_domain as start_mailing_by_domain, \
+    send_to_admin
 from app.vk_events.issues import open_issues
 from app.vk_tools.utils.admin_commands import restart_parser
 from app.config import settings
-from app.create_db import Info
+from app.create_db import Info, Missing
 
 logger = logging.getLogger(__name__)
 
@@ -27,82 +28,139 @@ def call_admin_command(
     command = command_split['command']
     args = command_split['args'] if len(command_split['args']) > 0 else None
 
+    send_message(
+        vk=vk,
+        chat_id=chat_id,
+        text=f'Вызвана команда {text}'
+    )
+
     if command == '/get_commands':
-        admin_commands.get_commands(
+        err = admin_commands.get_commands(
             vk=vk,
             session=session,
             chat_id=chat_id,
             args=args
         )
+        if not err:
+            send_message(vk, chat_id, 'Выполнена успешно')
+        else:
+            send_message(vk, chat_id, f'Выполнена неуспешно c кодом ошибки {err}')
 
     elif command == '/get_mailings':
-        admin_commands.get_mailings(
+        err = admin_commands.get_mailings(
             vk=vk,
             session=session,
             chat_id=chat_id,
             args=args
         )
+        if not err:
+            send_message(vk, chat_id, 'Выполнена успешно')
+        else:
+            send_message(vk, chat_id, f'Выполнена неуспешно c кодом ошибки {err}')
 
     elif command == '/get_guests':
-        admin_commands.get_guests(
+        err = admin_commands.get_guests(
             vk=vk,
             session=session,
             chat_id=chat_id,
             args=args
         )
+        if not err:
+            send_message(vk, chat_id, 'Выполнена успешно')
+        else:
+            send_message(vk, chat_id, f'Выполнена неуспешно c кодом ошибки {err}')
 
     elif command == '/get_orgs':
-        admin_commands.get_orgs(
+        err = admin_commands.get_orgs(
             vk=vk,
             session=session,
             chat_id=chat_id,
             args=args
         )
+        if not err:
+            send_message(vk, chat_id, 'Выполнена успешно')
+        else:
+            send_message(vk, chat_id, f'Выполнена неуспешно c кодом ошибки {err}')
 
     elif command == '/get_groups':
-        admin_commands.get_groups(
+        err = admin_commands.get_groups(
             vk=vk,
             session=session,
             chat_id=chat_id,
             args=args
         )
+        if not err:
+            send_message(vk, chat_id, 'Выполнена успешно')
+        else:
+            send_message(vk, chat_id, f'Выполнена неуспешно c кодом ошибки {err}')
 
     # elif command == '/update_timer':
     #     admin_commands.update_timer(session=session, args=args)
 
     elif command == '/start_mailing':
-        start_mailing(
+        err = start_mailing(
             vk=vk,
             session=session,
             args=args
         )
+        if not err:
+            send_message(vk, chat_id, 'Выполнена успешно')
+        else:
+            send_message(vk, chat_id, f'Выполнена неуспешно c кодом ошибки {err}')
+
+    elif command == '/test_mailing':
+        err = send_to_admin(
+            vk=vk,
+            session=session,
+            args=args
+        )
+        if not err:
+            send_message(vk, chat_id, 'Выполнена успешно')
+        else:
+            send_message(vk, chat_id, f'Выполнена неуспешно c кодом ошибки {err}')
 
     elif command == '/get_open_issues':
-        open_issues(vk=vk, session=session, chat_id=chat_id)
+        err = open_issues(vk=vk, session=session, chat_id=chat_id)
+        if not err:
+            send_message(vk, chat_id, 'Выполнена успешно')
+        else:
+            send_message(vk, chat_id, f'Выполнена неуспешно c кодом ошибки {err}')
 
     elif command == '/send_message':
-        start_mailing_by_domain(
+        err = start_mailing_by_domain(
             vk=vk,
             session=session,
             args=args
         )
+        if not err:
+            send_message(vk, chat_id, 'Выполнена успешно')
+        else:
+            send_message(vk, chat_id, f'Выполнена неуспешно c кодом ошибки {err}')
 
     elif command == '/restart_parser':
-        restart_parser(
+        err = restart_parser(
             vk=vk,
             session=session,
             spreadsheet_id=settings.GOOGLE_TABLE_ID,
             creds_file_name=settings.DIR_NAME + settings.GOOGLE_CREDS_PATH,
             token_file_name=settings.DIR_NAME + settings.GOOGLE_TOKEN_PATH
         )
+        if not err:
+            send_message(vk, chat_id, 'Выполнена успешно')
+        else:
+            send_message(vk, chat_id, f'Выполнена неуспешно c кодом ошибки {err}')
 
     elif command == '/close_tech':
-        admin_commands.close_tech(
+        err = admin_commands.close_tech(
             vk=vk,
             session=session,
             chat_id=chat_id,
             args=args
         )
+        if not err:
+            send_message(vk, chat_id, 'Выполнена успешно')
+        else:
+            send_message(vk, chat_id, f'Выполнена неуспешно c кодом ошибки {err}')
 
     else:
         send_message(
@@ -152,6 +210,15 @@ def call_guest_command(
             session=session,
             event=event
         )
+
+    elif text in [missed.button for missed in session.query(Missing).all()]:
+        user_commands.send_answer_missed(
+            vk=vk,
+            chat_id=chat_id,
+            session=session,
+            event=event
+        )
+
     elif text.lower().startswith('tech_support'):
         user_commands.send_tech_support(
             vk=vk,
@@ -160,7 +227,7 @@ def call_guest_command(
             event=event
         )
 
-    else:
+    elif text.lower() in ["старт", "назад"]:
         user_commands.main_menu(
             vk=vk,
             chat_id=chat_id,

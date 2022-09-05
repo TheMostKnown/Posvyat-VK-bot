@@ -12,7 +12,7 @@ from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from app.config import settings
 from app.vk_events.send_message import send_message
 from app.vk_tools.keyboards import user_keyboard
-from app.create_db import Info, Guests, TechSupport, Sendings
+from app.create_db import Info, Guests, TechSupport, Sendings, Missing
 
 logger = logging.getLogger(__name__)
 
@@ -112,62 +112,96 @@ def what_missed(
 
     :return: error number or 0
     """ 
-    user = session.query(Guests).get(chat_id)
 
-    user_groups = json.loads(user.groups)
-    user_texts = json.loads(user.texts)
+    missed = [missed.button for missed in session.query(Missing).all()]
+    
+    send_message(
+            vk=vk,
+            chat_id=chat_id,
+            text='Доступная информация:',
+            keyboard=user_keyboard.info_keyboard(missed)
 
-    missing = []
+        )
+    return 0
+    # user = session.query(Guests).get(chat_id)
 
-    for elem in session.query(Sendings):
+    # user_groups = json.loads(user.groups)
+    # user_texts = json.loads(user.texts)
 
-        if elem.groups[0] != '!':
-            sending_groups = json.loads(f'[{elem.groups}]')
-            #проверка входят ли уровни рассылки в уровни пользователя
-            if set(sending_groups).issubset(user_groups):
-                if not elem.id in user_texts:
-                    missing.append(elem.id)
-        else:
-            not_sending_groups = json.loads(f'[{elem.groups[1:]}]')
-            #проверка чтобы не входило в уровни пользователя
-            intersection = []
-            for group in user_groups:
-                if group in not_sending_groups:
-                    intersection.append(group)
-            if len(intersection) == 0 and not elem.id in user_texts:
-                missing.append(elem.id)
+    # missing = []
+
+    # for elem in session.query(Sendings):
+
+    #     if elem.groups[0] != '!':
+    #         sending_groups = json.loads(f'[{elem.groups}]')
+    #         #проверка входят ли уровни рассылки в уровни пользователя
+    #         if set(sending_groups).issubset(user_groups):
+    #             if not elem.id in user_texts:
+    #                 missing.append(elem.id)
+    #     else:
+    #         not_sending_groups = json.loads(f'[{elem.groups[1:]}]')
+    #         #проверка чтобы не входило в уровни пользователя
+    #         intersection = []
+    #         for group in user_groups:
+    #             if group in not_sending_groups:
+    #                 intersection.append(group)
+    #         if len(intersection) == 0 and not elem.id in user_texts:
+    #             missing.append(elem.id)
 
 
-    if len(missing) == 0:
-        send_message(vk, chat_id, "У вас нет пропущенных рассылок.")
-        return 0
+    # if len(missing) == 0:
+    #     send_message(vk, chat_id, "У вас нет пропущенных рассылок.")
+    #     return 0
 
-    send_message(vk, chat_id, "Пропущенные рассылки: ")
-    for item in missing:
-        sending = session.query(Sendings).filter(Sendings.id==item).first()
+    # send_message(vk, chat_id, "Пропущенные рассылки: ")
+    # for item in missing:
+    #     sending = session.query(Sendings).filter(Sendings.id==item).first()
 
-        sending_text = sending.text
-        sending_pics = json.loads(sending.pics)
-        sending_video = json.loads(sending.video)
-        sending_reposts = json.loads(sending.reposts)
-        sending_docs = json.loads(sending.docs)
+    #     sending_text = sending.text
+    #     sending_pics = json.loads(sending.pics)
+    #     sending_video = json.loads(sending.video)
+    #     sending_reposts = json.loads(sending.reposts)
+    #     sending_docs = json.loads(sending.docs)
 
-        send_message(
-                vk=vk,
-                chat_id=chat_id,
-                text=sending_text,
-                attachments=[
-                    *sending_pics,
-                    *sending_video,
-                    *sending_reposts,
-                    *sending_docs
-                ]
-            )
+    #     send_message(
+    #             vk=vk,
+    #             chat_id=chat_id,
+    #             text=sending_text,
+    #             attachments=[
+    #                 *sending_pics,
+    #                 *sending_video,
+    #                 *sending_reposts,
+    #                 *sending_docs
+    #             ]
+    #         )
         
-        user_texts.append(item)
-    user.texts = json.dumps(user_texts)
-    session.commit()
+    #     user_texts.append(item)
+    # user.texts = json.dumps(user_texts)
+    # session.commit()
         
+    # return 0
+
+def send_answer_missed(
+        vk: vk_api.vk_api.VkApiMethod,
+        chat_id: int,
+        session: Session,
+        event: Optional[VkBotEvent] = None,
+) -> int:
+    """ The function for sending answer to missed buttons
+
+    :param vk: session for connecting to VK API
+    :param chat_id: user id for sending message
+    :param session: session to connect to the database
+    :param event: event object in VK
+
+    :return: error number or 0
+    """ 
+    reply = session.query(Missing.answer).filter(Missing.button==event.message['text']).first()[0]
+    send_message(
+            vk=vk,
+            chat_id=chat_id,
+            text=reply
+        )
     return 0
 
 def tech_support(

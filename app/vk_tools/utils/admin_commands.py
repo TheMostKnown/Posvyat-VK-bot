@@ -377,7 +377,7 @@ def restart_parser(
         spreadsheet_id: str,
         creds_file_name: str,
         token_file_name: str
-) -> None:
+) -> int:
     get_init_data(
         vk=vk,
         session=session,
@@ -387,6 +387,7 @@ def restart_parser(
     )
     #update_timer(session)
     logger.info('Parser has restarted')
+    return 0
 
 
 # def info(
