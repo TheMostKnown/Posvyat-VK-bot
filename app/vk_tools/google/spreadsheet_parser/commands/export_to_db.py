@@ -223,10 +223,10 @@ def get_init_data(
         patronymic = guests_sheet[i][2]
         phone_number = guests_sheet[i][22]
         tag = guests_sheet[i][24]
-        vk = guests_sheet[i][23]
+        vk_get = guests_sheet[i][23]
 
-        if vk is not None:
-            vk_link = make_domain(vk)
+        if vk_get is not None:
+            vk_link = make_domain(vk_get)
 
             guest = session.query(Guests).filter_by(vk_link=vk_link).first()
 
