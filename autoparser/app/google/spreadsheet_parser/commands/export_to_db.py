@@ -208,7 +208,7 @@ def get_init_data(
                 )
 
     # getting info about participants
-    guests_sheet = spreadsheet['Guests']
+    guests_sheet = spreadsheet['Регистрация']
 
     for i in range(1, len(guests_sheet)):
         surname = guests_sheet[i][0]
@@ -216,9 +216,10 @@ def get_init_data(
         patronymic = guests_sheet[i][2]
         phone_number = guests_sheet[i][22]
         tag = guests_sheet[i][24]
-        vk_link = make_domain(guests_sheet[i][23])
+        vk = guests_sheet[i][23]
 
-        if vk_link is not None:
+        if vk is not None:
+            vk_link = make_domain(vk)
             
             guest = session.query(Guests).filter_by(vk_link=vk_link).first()
 
