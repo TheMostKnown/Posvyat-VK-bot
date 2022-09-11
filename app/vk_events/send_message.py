@@ -41,27 +41,26 @@ def send_message(
         104, 900, 901, 902, 911, 912, 913, 914, 917,
         921, 922, 925, 936, 940, 943, 944, 945, 946, 950, 962, 969
     ]
+    message_id = 10
+    try:
+        message_id = vk.messages.send(
+            user_id=chat_id,
+            message=text,
+            attachment=attachments,
+            random_id=get_random_id(),
+            keyboard=None if not keyboard else keyboard.get_keyboard()
+        )
 
-    message_id = vk.messages.send(
-        user_id=chat_id,
-        message=text,
-        attachment=attachments,
-        random_id=get_random_id(),
-        keyboard=None if not keyboard else keyboard.get_keyboard()
-    )
-
-    time.sleep(settings.DELAY)
-
-    if message_id in error_codes_list:
+        time.sleep(settings.DELAY)
+    except Exception:
 
         session = get_session(engine)
         user = session.query(Guests).filter_by(chat_id=chat_id).first()
         organizer = session.query(Orgs).filter_by(chat_id=chat_id).first()
 
         if user:
-            error_text = f'Пользователю vk.com/{user.vk_link} ({chat_id})' \
-                         f'не отправилось сообщение "{text}"\n' \
-                         f'По причине: "{message_id}"'
+            error_text = f'Пользователю vk.com/{user.vk_link} ({chat_id}) ' \
+                        f'не отправилось сообщение "{text}"'
             vk.messages.send(
                 user_id=settings.TECH_SUPPORT_VK_ID,
                 message=error_text,
@@ -69,9 +68,8 @@ def send_message(
             )
 
         elif organizer:
-            error_text = f'Пользователю vk.com/{organizer.vk_link} ({chat_id})' \
-                         f'не отправилось сообщение "{text}"\n' \
-                         f'По причине: "{e}"'
+            error_text = f'Пользователю vk.com/{organizer.vk_link} ({chat_id}) ' \
+                        f'не отправилось сообщение "{text}"\n'
             vk.messages.send(
                 user_id=settings.TECH_SUPPORT_VK_ID,
                 message=error_text,
