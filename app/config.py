@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     GOOGLE_CREDS_PATH: Optional[str]
     GOOGLE_TOKEN_PATH: Optional[str]
 
-    DELAY: Optional[int]
+    DELAY: Optional[float]
 
     class Config:
         env_prefix = 'POSVYAT_VK_'
